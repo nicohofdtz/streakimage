@@ -2,8 +2,6 @@ import datetime
 from datetime import datetime
 from enum import Enum
 
-from  import parse
-
 
 class FileType(Enum):
     """Enum for the file types used by HPD-TA
@@ -71,9 +69,9 @@ class StreakImage:
             )
             self.file_type = FileType(file_type_int)
             nnn = 64 + self.comment_length
-            self.comment = file_content[64 : nnn]
+            self.comment = file_content[64:nnn]
             self.data = self.parse_data(file_content[nnn:])
-    
+
     def parse_data(self, binary_data: bytes):
         """Parse given data bytes to 2d list
         
@@ -83,12 +81,13 @@ class StreakImage:
         """
         data = []
         byte_per_pixel = 2 if self.file_type == FileType.BIT8 else 4
-        
-        # for x in range(0, self.width):
-        #     column = []
-        #     for y in range(0, self.height):
-        #         column
-        #     data[i]
+        from_ = 0
+        to = byte_per_pixel
 
+        for y in range(0, self.height):
+            for x in range(0, self.width):
+                data[x[y]] = binary_data[from_:to]
+                from_ += byte_per_pixel
+                to += byte_per_pixel
 
         return data
