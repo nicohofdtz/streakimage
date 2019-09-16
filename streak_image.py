@@ -86,12 +86,15 @@ class StreakImage:
 
         for y in range(0, self.height):
             for x in range(0, self.width):
-                data[x][y] = int.from_bytes(
+                data[y][x] = int.from_bytes(
                     binary_data[from_:to], byteorder="little", signed=False
                 )
                 from_ += byte_per_pixel
                 to += byte_per_pixel
         with open("data.txt", "w") as file:
             for line in data:
-                file.writelines(str(line)[1:-1] + "\n")
+                # file.writelines(str(line)[1:-1] + "\n")
+                for num in line:
+                    file.write(str(num) + "\t")
+                file.write("\n")
         return data
