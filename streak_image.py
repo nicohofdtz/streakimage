@@ -74,20 +74,24 @@ class StreakImage:
 
     def parse_data(self, binary_data: bytes):
         """Parse given data bytes to 2d list
-        
+
         args:
             binary_data: The part of the file containing the intensity data.
-        
+
         """
-        data = []
+        data = [[0] * self.width for i in range(self.height)]
         byte_per_pixel = 2 if self.file_type == FileType.BIT8 else 4
         from_ = 0
         to = byte_per_pixel
 
         for y in range(0, self.height):
             for x in range(0, self.width):
-                data[x[y]] = binary_data[from_:to]
+                data[x][y] = int.from_bytes(
+                    binary_data[from_:to], byteorder="little", signed=False
+                )
                 from_ += byte_per_pixel
                 to += byte_per_pixel
-
+        with open("data.txt", "w") as file:
+            for line in data:
+                file.writelines(str(line)[1:-1] + "\n")
         return data
