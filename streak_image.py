@@ -12,6 +12,7 @@ class FileType(Enum):
     BIT8 = 0
     COMPRESSED = 1  # not used by HPD-TA
     BIT16 = 2
+    BIT32 = 3
 
 
 class StreakImage:
@@ -31,6 +32,8 @@ class StreakImage:
         self.y_offset: int
         self.file_type: FileType
         self.data: list
+        self.comment_string: str
+        self.parameters: dict
 
         self.parse_file(file_path)
         # print("Date:", self.date)
@@ -69,7 +72,9 @@ class StreakImage:
             )
             self.file_type = FileType(file_type_int)
             nnn = 64 + self.comment_length
-            self.comment = file_content[64:nnn]
+            self.comment_string = file_content[64:nnn]
+            # self.parameters =
+            self.parse_comment(self.comment_string)
             self.data = self.parse_data(file_content[nnn:])
 
     def parse_data(self, binary_data: bytes):
@@ -80,13 +85,13 @@ class StreakImage:
 
         """
         data = [[0] * self.width for i in range(self.height)]
-        byte_per_pixel = 2 if self.file_type == FileType.BIT8 else 4
+        byte_per_pixel = 2 if self.file_type == FileType.BIT16 else 4
         from_ = 0
         to = byte_per_pixel
 
-        for y in range(0, self.height):
-            for x in range(0, self.width):
-                data[y][x] = int.from_bytes(
+        for nm in range(0, self.height):
+            for ps in range(0, self.width):
+                data[nm][ps] = int.from_bytes(
                     binary_data[from_:to], byteorder="little", signed=False
                 )
                 from_ += byte_per_pixel
@@ -98,3 +103,46 @@ class StreakImage:
                     file.write(str(num) + "\t")
                 file.write("\n")
         return data
+
+    def parse_comment(self, comment: str):  # -> dict:
+        # \\TODO: add doc
+        # \\TODO: look for error in category 3
+        comment_dict: dict = {}
+        comment_list: list = comment.decode().split(sep="\r\n")  # splits
+
+        for category in comment_list:
+            category_list = category.split(",")
+            category_name = category_list[0][1:-1]
+            category_dict: dict = {}
+            for attribute in category_list[1:]:
+                kv_list = attribute.split("=")
+                key = kv_list[0]
+                value = kv_list[1]
+                category_dict[key] = value
+            comment_dict[category_name] = category_dict
+
+        print(comment_dict)
+        # return comment_dict
+
+    def isCompatible(self, other: "StreakImage"):
+        """Compare file type and dimension of given classes"""
+
+        if self.height != other.height:
+            raise IndexError(
+                "Height differs: {:s} vs {:s}".format(self.height, other.height)
+            )
+
+        if self.width != other.width:
+            raise IndexError(
+                "Width differs: {:s} vs {:s}".format(self.width, other.width)
+            )
+
+        if self.file_type != other.file_type:
+            raise ValueError("File types do not match.")
+
+    # def subtract_bg(self, other: "StreakImage") -> "StreakImage":
+    #     i = 0
+    #     for i in range(0, self.):
+    #         for k in range(0, )
+    #         self.data[i] -= other.data[i]
+    #         i += 1
