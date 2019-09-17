@@ -2,7 +2,8 @@ import datetime
 from datetime import datetime
 from enum import Enum
 import re
-from csv import reader
+from csv import reader, Dialect
+import csv
 from io import StringIO
 
 
@@ -78,7 +79,7 @@ class StreakImage:
             )
             self.file_type = FileType(file_type_int)
             nnn = 64 + self.comment_length
-            self.comment_string = file_content[64:nnn]
+            self.comment_string = file_content[64:nnn].decode("utf-8")
             # self.parameters =
             self.parse_comment(self.comment_string)
             self.data = self.parse_data(file_content[nnn:])
@@ -122,21 +123,37 @@ class StreakImage:
 
         '''
         comment_dict: dict = {}  # the first level dictionary
-        comment_list: list = comment.decode().split(sep="\r\n")  # splits
+        comment_list: list = comment.split(sep="\r\n")  # splits
+        print(type(comment))
+        comment = 'CurveCorr=0,DefectCorrection=0,areSource="0,0,640,512",areGRBScan="0,0,640,512",pntOrigCh="0,0"'
+        print(comment)
+        # =[a-zA-Z0-9]*?,|=(\".*?\")\,
 
-        for category in comment_list[1:2]:
-            # comment is in csv-format so use csv.reader to parse
-            # this preserves commas in double quotes
-            category = StringIO(category)
-            category_list = reader(category).__next__()
-            category_name = category_list[0][1:-1]
-            category_dict: dict = {}  # the second level dictionaries
-            for attribute in category_list[1:]:
-                kv_list = attribute.split("=")
-                key = kv_list[0]
-                value = kv_list[1]
-                category_dict[key] = value
-        comment_dict[category_name] = category_dict
+        category_list = reader(
+            comment, quoting=csv.QUOTE_ALL).__next__()
+
+        print(category_list)
+
+        infile = ['A,B,C,"D12121",E,F,G,H,a"I9,I8",J,K']
+
+        for line in reader(comment):
+            print(line)
+
+        # for category in comment_list[2:]:
+        #     # comment is in csv-format so use csv.reader to parse
+        #     # this preserves commas in double quotes
+        #     # category = StringIO(category)
+        #     category_list = reader(category).__next__()
+        #     category_name = category_list[0][1:-1]
+        #     category_dict: dict = {}    # the second level dictionaries
+
+        #     for attribute in category_list[1:]:
+        #         kv_list = attribute.split("=")
+        #         key = kv_list[0]
+        #         value = kv_list[1]
+        #         category_dict[key] = value
+
+        # comment_dict[category_name] = category_dict
 
         return comment_dict
 
