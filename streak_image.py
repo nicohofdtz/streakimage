@@ -1,6 +1,9 @@
 import datetime
 from datetime import datetime
 from enum import Enum
+import re
+from csv import reader
+from io import StringIO
 
 
 class FileType(Enum):
@@ -17,7 +20,7 @@ class FileType(Enum):
 
 class StreakImage:
     """Parses and holds the data of an recorded image
-    
+
         args:
             file_path: Path to the file to be parsed
 
@@ -34,17 +37,20 @@ class StreakImage:
         self.data: list
         self.comment_string: str
         self.parameters: dict
+        self.verbose: bool = False
 
         self.parse_file(file_path)
         # print("Date:", self.date)
-        print("Comment length:", self.comment_length)
-        print("Width:", self.width, "Height:", self.height)
-        print("x-offset:", self.x_offset, "y-offset", self.y_offset)
-        print("file-type:", self.file_type.name)
+        if self.verbose:
+            print("Comment length:", self.comment_length)
+            print("Width:", self.width, "Height:", self.height)
+            print("x-offset:", self.x_offset, "y-offset", self.y_offset)
+            print("file-type:", self.file_type.name)
+            print("comment:", self.comment_string)
 
     def parse_file(self, file_path: str):
         """Read the given file and parse the content to class fields.
-        
+
         args:
             file_path: Path to the file to be parsed
 
@@ -104,32 +110,43 @@ class StreakImage:
                 file.write("\n")
         return data
 
-    def parse_comment(self, comment: str):  # -> dict:
-        # \\TODO: add doc
-        # \\TODO: look for error in category 3
-        comment_dict: dict = {}
+    def parse_comment(self, comment: str) -> dict:
+        '''Parse the comment string and return it as a dictionary
+
+        args:
+            comment: the comment string
+
+        return:
+            The returned object is a dictionary of dictionaries. The first level is a dictionary of the comment categories. 
+            The second level dictionaries contain the key-value pairs of each category. 
+
+        '''
+        comment_dict: dict = {}  # the first level dictionary
         comment_list: list = comment.decode().split(sep="\r\n")  # splits
 
-        for category in comment_list:
-            category_list = category.split(",")
+        for category in comment_list[1:2]:
+            # comment is in csv-format so use csv.reader to parse
+            # this preserves commas in double quotes
+            category = StringIO(category)
+            category_list = reader(category).__next__()
             category_name = category_list[0][1:-1]
-            category_dict: dict = {}
+            category_dict: dict = {}  # the second level dictionaries
             for attribute in category_list[1:]:
                 kv_list = attribute.split("=")
                 key = kv_list[0]
                 value = kv_list[1]
                 category_dict[key] = value
-            comment_dict[category_name] = category_dict
+        comment_dict[category_name] = category_dict
 
-        print(comment_dict)
-        # return comment_dict
+        return comment_dict
 
     def isCompatible(self, other: "StreakImage"):
         """Compare file type and dimension of given classes"""
 
         if self.height != other.height:
             raise IndexError(
-                "Height differs: {:s} vs {:s}".format(self.height, other.height)
+                "Height differs: {:s} vs {:s}".format(
+                    self.height, other.height)
             )
 
         if self.width != other.width:
