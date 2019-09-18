@@ -97,9 +97,9 @@ class StreakImage:
         from_ = 0
         to = byte_per_pixel
 
-        for nm in range(0, self.height):
-            for ps in range(0, self.width):
-                data[nm][ps] = int.from_bytes(
+        for wl in range(0, self.height):
+            for time in range(0, self.width):
+                data[wl][time] = int.from_bytes(
                     binary_data[from_:to], byteorder="little", signed=False
                 )
                 from_ += byte_per_pixel
@@ -166,12 +166,14 @@ class StreakImage:
         if self.verbose:
             print("Comment parsed. This is the resulting dict:")
             for val in comment_dict:
+                print("-" * 60+"\n")
                 print(val + ":")
                 print("\n" + "-" * 30)
                 for entry in comment_dict[val]:
-                    print("\t{:_<22s}:{:s}".format(entry, comment_dict[val][entry]))
-                print("\n" + "-" * 30 + "\n" * 3)
-
+                    print("\t{:_<22s}:{:s}".format(
+                        entry, comment_dict[val][entry]))
+                print("\n" + "-" * 30)
+            print("-" * 60+"\n")
         return comment_dict
 
     def isCompatible(self, other: "StreakImage"):
@@ -179,7 +181,8 @@ class StreakImage:
 
         if self.height != other.height:
             raise IndexError(
-                "Height differs: {:s} vs {:s}".format(self.height, other.height)
+                "Height differs: {:s} vs {:s}".format(
+                    self.height, other.height)
             )
 
         if self.width != other.width:
@@ -189,3 +192,12 @@ class StreakImage:
 
         if self.file_type != other.file_type:
             raise ValueError("File types do not match.")
+
+    def exportSDF(self, path):
+        """Export the data to the SDF file format.
+
+        The data is exported to a SDF file at the given path.
+        The generated file is compatible to the labview program "PL_Analyze".
+
+        """
+        pass
