@@ -27,7 +27,7 @@ class StreakImage:
 
     """
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, verbose: bool = False):
         self.date: datetime
         self.comment_length: int
         self.width: int
@@ -38,7 +38,7 @@ class StreakImage:
         self.data: list
         self.comment_string: str
         self.parameters: dict
-        self.verbose: bool = False
+        self.verbose: bool = verbose
 
         self.parse_file(file_path)
         # print("Date:", self.date)
@@ -81,6 +81,7 @@ class StreakImage:
             nnn = 64 + self.comment_length
             self.comment_string = file_content[64:nnn].decode("utf-8")
             # self.parameters =
+            # print(self.comment_string)
             self.parse_comment(self.comment_string)
             self.data = self.parse_data(file_content[nnn:])
 
@@ -112,7 +113,9 @@ class StreakImage:
         return data
 
     def parse_comment(self, comment: str) -> dict:
-        '''Parse the comment string and return it as a dictionary
+        """Parse the comment string and return it as a dictionary
+
+        The argument hast to be a 
 
         args:
             comment: the comment string
@@ -121,39 +124,53 @@ class StreakImage:
             The returned object is a dictionary of dictionaries. The first level is a dictionary of the comment categories. 
             The second level dictionaries contain the key-value pairs of each category. 
 
-        '''
-        comment_dict: dict = {}  # the first level dictionary
-        comment_list: list = comment.split(sep="\r\n")  # splits
-        print(type(comment))
-        comment = 'CurveCorr=0,DefectCorrection=0,areSource="0,0,640,512",areGRBScan="0,0,640,512",pntOrigCh="0,0"'
-        print(comment)
-        # =[a-zA-Z0-9]*?,|=(\".*?\")\,
+        """
+        # build 1st level dictionary
+        comment_dict: dict = {}
+        # split comment string into category substrings
+        comment_list: list = comment.split(sep="\r\n")
 
-        category_list = reader(
-            comment, quoting=csv.QUOTE_ALL).__next__()
+        # last entry needs special treatment due to missing line break
+        if comment_list[-1].find("[Comment]") > 0:
+            corrected_list = re.split("(\[Comment\],.*)", comment_list[-1])
+            comment_list[-1] = corrected_list[0]
+            comment_list.append(corrected_list[1])
 
-        print(category_list)
+        # build 2nd level dictionaries
+        for category in comment_list:
+            # category name is written in brackets and is extracted first
+            category_name, category_body = re.match(
+                "\[(.*?)\]\,(.*)", category
+            ).groups()
 
-        infile = ['A,B,C,"D12121",E,F,G,H,a"I9,I8",J,K']
+            key_rex = "[a-zA-Z0-9 ]*"
+            value_rex = "[a-zA-Z0-9 ]*"
+            quoted_val_rex = '".*?"'
+            comma_or_eos_rex = "?:,|$"
+            key_val_pair_rex = (
+                "("
+                + key_rex
+                + ")=("
+                + value_rex
+                + "|"
+                + quoted_val_rex
+                + ")("
+                + comma_or_eos_rex
+                + ")"
+            )
 
-        for line in reader(comment):
-            print(line)
+            category_dict = dict(re.findall(key_val_pair_rex, category_body))
 
-        # for category in comment_list[2:]:
-        #     # comment is in csv-format so use csv.reader to parse
-        #     # this preserves commas in double quotes
-        #     # category = StringIO(category)
-        #     category_list = reader(category).__next__()
-        #     category_name = category_list[0][1:-1]
-        #     category_dict: dict = {}    # the second level dictionaries
+            comment_dict[category_name] = category_dict
 
-        #     for attribute in category_list[1:]:
-        #         kv_list = attribute.split("=")
-        #         key = kv_list[0]
-        #         value = kv_list[1]
-        #         category_dict[key] = value
-
-        # comment_dict[category_name] = category_dict
+        if self.verbose:
+            print("Comment parsed. This is the resulting dict:")
+            for val in comment_dict:
+                print(val + ":")
+                print("\n" + "-" * 30)
+                for entry in comment_dict[val]:
+                    print("\t{:_<22s}:{:s}".format(entry, comment_dict[val][entry]))
+                print("\n" + "-" * 30 + "\n" * 3)
 
         return comment_dict
 
@@ -162,8 +179,7 @@ class StreakImage:
 
         if self.height != other.height:
             raise IndexError(
-                "Height differs: {:s} vs {:s}".format(
-                    self.height, other.height)
+                "Height differs: {:s} vs {:s}".format(self.height, other.height)
             )
 
         if self.width != other.width:
@@ -173,10 +189,3 @@ class StreakImage:
 
         if self.file_type != other.file_type:
             raise ValueError("File types do not match.")
-
-    # def subtract_bg(self, other: "StreakImage") -> "StreakImage":
-    #     i = 0
-    #     for i in range(0, self.):
-    #         for k in range(0, )
-    #         self.data[i] -= other.data[i]
-    #         i += 1
