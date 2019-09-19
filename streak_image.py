@@ -2,9 +2,7 @@ import datetime
 from datetime import datetime
 from enum import Enum
 import re
-from csv import reader, Dialect
-import csv
-from io import StringIO
+import numpy as np
 
 
 class FileType(Enum):
@@ -35,7 +33,7 @@ class StreakImage:
         self.x_offset: int
         self.y_offset: int
         self.file_type: FileType
-        self.data: list
+        self.data: np.array[np.array]
         self.comment_string: str
         self.parameters: dict
         self.verbose: bool = verbose
@@ -92,7 +90,7 @@ class StreakImage:
             binary_data: The part of the file containing the intensity data.
 
         """
-        data = [[0] * self.width for i in range(self.height)]
+        data = np.zeros((self.height, self.width))
         byte_per_pixel = 2 if self.file_type == FileType.BIT16 else 4
         from_ = 0
         to = byte_per_pixel
@@ -166,14 +164,13 @@ class StreakImage:
         if self.verbose:
             print("Comment parsed. This is the resulting dict:")
             for val in comment_dict:
-                print("-" * 60+"\n")
+                print("-" * 60 + "\n")
                 print(val + ":")
                 print("\n" + "-" * 30)
                 for entry in comment_dict[val]:
-                    print("\t{:_<22s}:{:s}".format(
-                        entry, comment_dict[val][entry]))
+                    print("\t{:_<22s}:{:s}".format(entry, comment_dict[val][entry]))
                 print("\n" + "-" * 30)
-            print("-" * 60+"\n")
+            print("-" * 60 + "\n")
         return comment_dict
 
     def isCompatible(self, other: "StreakImage"):
@@ -181,8 +178,7 @@ class StreakImage:
 
         if self.height != other.height:
             raise IndexError(
-                "Height differs: {:s} vs {:s}".format(
-                    self.height, other.height)
+                "Height differs: {:s} vs {:s}".format(self.height, other.height)
             )
 
         if self.width != other.width:
