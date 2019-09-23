@@ -140,19 +140,17 @@ class StreakImage:
             category_name, category_body = re.match(
                 r"\[(.*?)\]\,(.*)", category
             ).groups()
-            print(category_name)
-            print(category_body)
-
             key_rex = r"[a-zA-Z0-9 ]*"
             value_rex = r"[a-zA-Z0-9 ]*"
             quoted_val_rex = r'".*?"'
             comma_or_eos_rex = r"?:,|$"
-            key_val_pair_rex = f"({{key_rex}})=({{value_rex}}|{{quoted_val_rex}})({{comma_or_eos_rex}})"
+            key_val_pair_rex = (
+                rf"({key_rex})=({value_rex}|{quoted_val_rex})({comma_or_eos_rex})"
+            )
 
             category_dict = dict(re.findall(key_val_pair_rex, category_body))
 
             comment_dict[category_name] = category_dict
-            print(comment_dict)
         if self.verbose:
             print("Comment parsed. This is the resulting dict:")
             for val in comment_dict:
@@ -160,8 +158,7 @@ class StreakImage:
                 print(val + ":")
                 print("\n" + "-" * 30)
                 for entry in comment_dict[val]:
-                    print("\t{:_<22s}:{:s}".format(
-                        entry, comment_dict[val][entry]))
+                    print("\t{:_<22s}:{:s}".format(entry, comment_dict[val][entry]))
                 print("\n" + "-" * 30)
             print("-" * 60 + "\n")
         return comment_dict
@@ -171,8 +168,7 @@ class StreakImage:
 
         if self.height != other.height:
             raise IndexError(
-                "Height differs: {:s} vs {:s}".format(
-                    self.height, other.height)
+                "Height differs: {:s} vs {:s}".format(self.height, other.height)
             )
 
         if self.width != other.width:
