@@ -5,7 +5,8 @@ import os
 import numpy as np
 
 parser = argparse.ArgumentParser()
-parser.add_argument("file", action="store", default="test", help="file to plot")
+parser.add_argument("file", action="store",
+                    default="test", help="file to plot")
 parser.add_argument(
     "-v", "--verbose", action="store_true", default=False, help="Verbose mode."
 )
@@ -18,6 +19,7 @@ verbose = args.verbose
 plot = args.plot
 file = args.file
 
+image: StreakImage = None
 data: np.ndarray = None
 
 if file == "test":
@@ -30,5 +32,3 @@ elif os.path.isfile(file):
 if plot and data != None:
     plt.pcolormesh(data)
     plt.show()
-
-# print(test.height)
