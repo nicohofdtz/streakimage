@@ -7,18 +7,6 @@ import argparse
 import json
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("file", action="store",
-                    default="test", help="file to plot")
-parser.add_argument(
-    "-v", "--verbose", action="store_true", default=False, help="Verbose mode."
-)
-
-args = parser.parse_args()
-verbose = args.verbose
-file_path = args.file
-
-
 class FileType(Enum):
     """Enum for the file types used by HPD-TA
 
@@ -157,8 +145,7 @@ class StreakImage:
             value_rex = r"[a-zA-Z0-9 ]*"
             quoted_val_rex = r'".*?"'
             comma_or_eos_rex = r"?:,|$"
-            key_val_pair_rex =
-            f."({{key_rex}})=({{value_rex}}|{{quoted_val_rex}})({{comma_or_eos_rex}})"
+            key_val_pair_rex = f"({{key_rex}})=({{value_rex}}|{{quoted_val_rex}})({{comma_or_eos_rex}})"
 
             category_dict = dict(re.findall(key_val_pair_rex, category_body))
 
@@ -171,8 +158,7 @@ class StreakImage:
                 print(val + ":")
                 print("\n" + "-" * 30)
                 for entry in comment_dict[val]:
-                    print("\t{:_<22s}:{:s}".format(
-                        entry, comment_dict[val][entry]))
+                    print("\t{:_<22s}:{:s}".format(entry, comment_dict[val][entry]))
                 print("\n" + "-" * 30)
             print("-" * 60 + "\n")
         return comment_dict
@@ -182,8 +168,7 @@ class StreakImage:
 
         if self.height != other.height:
             raise IndexError(
-                "Height differs: {:s} vs {:s}".format(
-                    self.height, other.height)
+                "Height differs: {:s} vs {:s}".format(self.height, other.height)
             )
 
         if self.width != other.width:
@@ -204,8 +189,12 @@ class StreakImage:
         pass
 
     def getJSON(self) -> str:
-        streak_dict: dict = {"date": self.date, "width": self.width,
-                             "height": self.height, "data": self.data, }
+        streak_dict: dict = {
+            "date": self.date,
+            "width": self.width,
+            "height": self.height,
+            "data": self.data,
+        }
         json_dump = json.dumps(streak_dict, cls=NumpyEncoder)
         print(json_dump)
 
