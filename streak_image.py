@@ -3,6 +3,18 @@ from datetime import datetime
 from enum import Enum
 import re
 import numpy as np
+import argparse
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("file", action="store", default="test", help="file to plot")
+parser.add_argument(
+    "-v", "--verbose", action="store_true", default=False, help="Verbose mode."
+)
+
+args = parser.parse_args()
+verbose = args.verbose
+file_path = args.file
 
 
 class FileType(Enum):
@@ -33,7 +45,7 @@ class StreakImage:
         self.x_offset: int
         self.y_offset: int
         self.file_type: FileType
-        self.data: np.array[np.array]
+        self.data: np.ndarray
         self.comment_string: str
         self.parameters: dict
         self.verbose: bool = verbose
@@ -130,7 +142,7 @@ class StreakImage:
 
         # last entry needs special treatment due to missing line break
         if comment_list[-1].find("[Comment]") > 0:
-            corrected_list = re.split("(\[Comment\],.*)", comment_list[-1])
+            corrected_list = re.split(r"(\[Comment\],.*)", comment_list[-1])
             comment_list[-1] = corrected_list[0]
             comment_list.append(corrected_list[1])
 
@@ -138,24 +150,16 @@ class StreakImage:
         for category in comment_list:
             # category name is written in brackets and is extracted first
             category_name, category_body = re.match(
-                "\[(.*?)\]\,(.*)", category
+                r"\[(.*?)\]\,(.*)", category
             ).groups()
 
-            key_rex = "[a-zA-Z0-9 ]*"
-            value_rex = "[a-zA-Z0-9 ]*"
-            quoted_val_rex = '".*?"'
-            comma_or_eos_rex = "?:,|$"
-            key_val_pair_rex = (
-                "("
-                + key_rex
-                + ")=("
-                + value_rex
-                + "|"
-                + quoted_val_rex
-                + ")("
-                + comma_or_eos_rex
-                + ")"
-            )
+            key_rex = r"[a-zA-Z0-9 ]*"
+            value_rex = r"[a-zA-Z0-9 ]*"
+            quoted_val_rex = r'".*?"'
+            comma_or_eos_rex = r"?:,|$"
+            key_val_pair_rex = 
+                f."({{key_rex}})=({{value_rex}}|{{quoted_val_rex}})({{comma_or_eos_rex}})"
+            
 
             category_dict = dict(re.findall(key_val_pair_rex, category_body))
 
