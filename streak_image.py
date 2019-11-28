@@ -186,21 +186,22 @@ class StreakImage:
         The generated file is compatible to the labview program "PL_Analyze".
 
         """
+        # ToDo: Implement or purge
         pass
 
-    def getJSON(self) -> str:
-        streak_dict: dict = {
-            "date": self.date,
-            "width": self.width,
-            "height": self.height,
-            "data": self.data,
-        }
-        json_dump = json.dumps(streak_dict, cls=NumpyEncoder)
-        print(json_dump)
+    # def getJSON(self) -> str:
+    #     streak_dict: dict = {
+    #         "date": self.date,
+    #         "width": self.width,
+    #         "height": self.height,
+    #         "data": self.data,
+    #     }
+    #     json_dump = json.dumps(streak_dict, cls=NumpyEncoder)
+    #     print(json_dump)
 
 
-class NumpyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return json.JSONENCODER.default(self, obj)
+# class NumpyEncoder(json.JSONEncoder):
+#     def default(self, obj):
+#         if isinstance(obj, np.ndarray):
+#             return obj.tolist()
+#         return json.JSONENCODER.default(self, obj)
