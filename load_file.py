@@ -30,6 +30,8 @@ elif os.path.isfile(file):
 else:
     print(os.path.isfile(file))
 
-if plot and data != None:
+if plot and data is not None:
     plt.pcolormesh(data)
     plt.show()
+
+print(image.data)
