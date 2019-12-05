@@ -5,33 +5,38 @@ import os
 import numpy as np
 
 parser = argparse.ArgumentParser()
-parser.add_argument("file", action="store", default="test", help="file to plot")
+parser.add_argument("-f", "--file", action="store", default="", help="file to plot")
 parser.add_argument(
     "-v", "--verbose", action="store_true", default=False, help="Verbose mode."
 )
 parser.add_argument(
     "-p", "--plot", action="store_true", default=False, help="plot data"
 )
+parser.add_argument(
+    "-t", "--test", action="store_true", default=False, help="Test mode."
+)
 
 args = parser.parse_args()
+file = args.file
 verbose = args.verbose
 plot = args.plot
-file = args.file
+test = args.test
 
 image: StreakImage = None
 data: np.ndarray = None
 
-if file == "test":
-    image = StreakImage("test/test_file2.img", verbose)
-    data = image.data
-elif os.path.isfile(file):
+if test:
+    file = "test/test_file2.img"
+    verbose = True
+if os.path.isfile(file):
     image = StreakImage(file, verbose)
     data = image.data
+    if plot and data is not None:
+        plt.pcolormesh(data)
+        plt.show()
+
+    image.get_date()
+    # image.get_json()
 else:
-    print(os.path.isfile(file))
+    print("File not found")
 
-if plot and data is not None:
-    plt.pcolormesh(data)
-    plt.show()
-
-print(image.data)
