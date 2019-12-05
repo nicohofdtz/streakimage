@@ -1,5 +1,4 @@
-import datetime
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 import re
 import numpy as np
@@ -28,7 +27,6 @@ class StreakImage:
     """
 
     def __init__(self, file_path: str, verbose: bool = False):
-        self.date: datetime
         self.comment_length: int
         self.width: int
         self.height: int
@@ -78,10 +76,11 @@ class StreakImage:
                 file_content[12:13], byteorder="little", signed=False
             )
             self.file_type = FileType(file_type_int)
+
             nnn = 64 + self.comment_length
+            self.data = self.parse_data(file_content[nnn:])
             self.comment_string = file_content[64:nnn].decode("utf-8")
             self.parameters = self.parse_comment(self.comment_string)
-            self.data = self.parse_data(file_content[nnn:])
 
     def parse_data(self, binary_data: bytes):
         """Parse given data bytes to 2d list
@@ -104,7 +103,6 @@ class StreakImage:
                 to += byte_per_pixel
         with open("data.txt", "w") as file:
             for line in data:
-                # file.writelines(str(line)[1:-1] + "\n")
                 for num in line:
                     file.write(str(num) + "\t")
                 file.write("\n")
@@ -156,14 +154,16 @@ class StreakImage:
             for val in comment_dict:
                 print("-" * 60 + "\n")
                 print(val + ":")
-                print("\n" + "-" * 30)
+                print("-" * 60)
                 for entry in comment_dict[val]:
-                    print("\t{:_<22s}:{:s}".format(entry, comment_dict[val][entry]))
-                print("\n" + "-" * 30)
+                    print(
+                        "|\t{:.<22s}:{: <28s}".format(entry, comment_dict[val][entry])
+                        + "|"
+                    )
             print("-" * 60 + "\n")
         return comment_dict
 
-    def isCompatible(self, other: "StreakImage"):
+    def is_compatible(self, other: "StreakImage"):
         """Compare file type and dimension of given classes"""
 
         if self.height != other.height:
@@ -189,9 +189,30 @@ class StreakImage:
         # ToDo: Implement or purge
         pass
 
-    # def getJSON(self) -> str:
+    def get_date(self) -> datetime:
+        date_re = re.match(
+            r"\"(?P<month>[0-9]{2})\-(?P<day>[0-9]{2})\-(?P<year>[0-9]{4})\"",
+            self.parameters["Application"]["Date"],
+        )
+        date = date_re.groupdict()
+        time_re = re.match(
+            r'"(?P<hour>[0-9]{2})\:(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})"',
+            self.parameters["Application"]["Time"],
+        )
+        time = time_re.groupdict()
+        datetime_ = datetime(
+            int(date["year"]),
+            int(date["month"]),
+            int(date["day"]),
+            int(time["hour"]),
+            int(time["minute"]),
+            int(time["second"]),
+        )
+        return datetime_
+
+    # def get_json(self) -> str:
     #     streak_dict: dict = {
-    #         "date": self.date,
+    #         "date": ,
     #         "width": self.width,
     #         "height": self.height,
     #         "data": self.data,
