@@ -4,6 +4,7 @@ import re
 import numpy as np
 import argparse
 import json
+from json_tricks import dumps as jt_dumps
 
 
 class FileType(Enum):
@@ -151,16 +152,19 @@ class StreakImage:
             comment_dict[category_name] = category_dict
         if self.verbose:
             print("Comment parsed. This is the resulting dict:")
-            for val in comment_dict:
+            with open("params.txt", "w") as params:
+                for val in comment_dict:
+                    print("-" * 60 + "\n")
+                    print(val + ":")
+                    params.write(var"=namedtuple(")
+                    print("-" * 60)
+                    for entry in comment_dict[val]:
+                        print(
+                            "|\t{:.<22s}:{: <28s}".format(entry, comment_dict[val][entry])
+                            + "|"
+                        )
+                        params.write('"'+entry+'"')
                 print("-" * 60 + "\n")
-                print(val + ":")
-                print("-" * 60)
-                for entry in comment_dict[val]:
-                    print(
-                        "|\t{:.<22s}:{: <28s}".format(entry, comment_dict[val][entry])
-                        + "|"
-                    )
-            print("-" * 60 + "\n")
         return comment_dict
 
     def is_compatible(self, other: "StreakImage"):
@@ -210,19 +214,24 @@ class StreakImage:
         )
         return datetime_
 
-    # def get_json(self) -> str:
-    #     streak_dict: dict = {
-    #         "date": ,
-    #         "width": self.width,
-    #         "height": self.height,
-    #         "data": self.data,
-    #     }
-    #     json_dump = json.dumps(streak_dict, cls=NumpyEncoder)
-    #     print(json_dump)
+    def get_json(self) -> str:
+        streak_dict: dict = {
+            "date": self.get_date(),
+            "width": self.width,
+            "height": self.height,
+            "x_offset": self.x_offset,
+            "y_offset": self.y_offset,
+            "file_type": self.file_type,
+            "parameters": ,
+
+            "data": self.data,
+        }
+        json_dump = jt_dumps(streak_dict, indent=4)
+        return json_dump
 
 
 # class NumpyEncoder(json.JSONEncoder):
 #     def default(self, obj):
 #         if isinstance(obj, np.ndarray):
 #             return obj.tolist()
-#         return json.JSONENCODER.default(self, obj)
+#         return json.JSONEncoder.default(self, obj)

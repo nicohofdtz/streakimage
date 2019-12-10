@@ -3,6 +3,7 @@ import argparse
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+from json_tricks import loads as jt_loads
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-f", "--file", action="store", default="", help="file to plot")
@@ -27,7 +28,6 @@ data: np.ndarray = None
 
 if test:
     file = "test/test_file2.img"
-    verbose = True
 if os.path.isfile(file):
     image = StreakImage(file, verbose)
     data = image.data
@@ -35,8 +35,8 @@ if os.path.isfile(file):
         plt.pcolormesh(data)
         plt.show()
 
-    image.get_date()
-    # image.get_json()
+    # print(image.get_date())
+    # print((image.get_json()))
 else:
     print("File not found")
 
