@@ -5,6 +5,10 @@ import numpy as np
 import argparse
 import json
 from json_tricks import dumps as jt_dumps
+from collections import OrderedDict
+from hpdta8_params import ParaList, build_parameters_tuple
+
+# from hpdta8_params import build_parameters_tuple
 
 
 class FileType(Enum):
@@ -36,7 +40,7 @@ class StreakImage:
         self.file_type: FileType
         self.data: np.ndarray
         self.comment_string: str
-        self.parameters: dict
+        self.parameters: ParaList
         self.verbose: bool = verbose
 
         self.parse_file(file_path)
@@ -82,6 +86,7 @@ class StreakImage:
             self.data = self.parse_data(file_content[nnn:])
             self.comment_string = file_content[64:nnn].decode("utf-8")
             self.parameters = self.parse_comment(self.comment_string)
+            # build_parameters_tuple(self.parameters)
 
     def parse_data(self, binary_data: bytes):
         """Parse given data bytes to 2d list
@@ -109,7 +114,7 @@ class StreakImage:
                 file.write("\n")
         return data
 
-    def parse_comment(self, comment: str) -> dict:
+    def parse_comment(self, comment: str) -> ParaList:
         """Parse the comment string and return it as a dictionary
 
         The argument hast to be a 
@@ -123,7 +128,7 @@ class StreakImage:
 
         """
         # build 1st level dictionary
-        comment_dict: dict = {}
+        comment_dict: OrderedDict = OrderedDict()
         # split comment string into category substrings
         comment_list: list = comment.split(sep="\r\n")
 
@@ -136,10 +141,13 @@ class StreakImage:
         # build 2nd level dictionaries
         for category in comment_list:
             # category name is written in brackets and is extracted first
-            category_name, category_body = re.match(
-                r"\[(.*?)\]\,(.*)", category
-            ).groups()
-            key_rex = r"[a-zA-Z0-9 ]*"
+            catergory_match = re.match(r"\[(.*?)\]\,(.*)", category)
+            if catergory_match:
+                category_name, category_body = catergory_match.groups()
+            else:
+                raise ValueError("Category name and/or body could not be parsed.")
+            
+            key_rex = r"[a-zA-Z0-9\. ]*"
             value_rex = r"[a-zA-Z0-9 ]*"
             quoted_val_rex = r'".*?"'
             comma_or_eos_rex = r"?:,|$"
@@ -147,25 +155,35 @@ class StreakImage:
                 rf"({key_rex})=({value_rex}|{quoted_val_rex})({comma_or_eos_rex})"
             )
 
-            category_dict = dict(re.findall(key_val_pair_rex, category_body))
+            category_dict_with_spaces = OrderedDict(
+                re.findall(key_val_pair_rex, category_body)
+            )
+            category_dict = {
+                k.replace(" ", "").replace(".", ""): v
+                for k, v in category_dict_with_spaces.items()
+            }
 
-            comment_dict[category_name] = category_dict
+            comment_dict[category_name.replace(" ", "")] = category_dict
+
         if self.verbose:
             print("Comment parsed. This is the resulting dict:")
             with open("params.txt", "w") as params:
-                for val in comment_dict:
+                for category in comment_dict:
+                    # ToDo: remove
+                    # params.write(category + "=namedtuple('" + category + "','")
                     print("-" * 60 + "\n")
-                    print(val + ":")
-                    params.write(var"=namedtuple(")
+                    print(category + ":")
                     print("-" * 60)
-                    for entry in comment_dict[val]:
-                        print(
-                            "|\t{:.<22s}:{: <28s}".format(entry, comment_dict[val][entry])
-                            + "|"
-                        )
-                        params.write('"'+entry+'"')
+                    keys: str = ""
+                    for key in comment_dict[category]:
+                        value = comment_dict[category][key]
+                        print("|\t{:.<22s}:{: <28s}".format(key, value) + "|")
+                        keys = keys + key + " "
+                    # ToDo: remove
+                    # params.write(keys[:-1] + "')\n")
                 print("-" * 60 + "\n")
-        return comment_dict
+        param_list = build_parameters_tuple(comment_dict)
+        return param_list
 
     def is_compatible(self, other: "StreakImage"):
         """Compare file type and dimension of given classes"""
@@ -196,14 +214,18 @@ class StreakImage:
     def get_date(self) -> datetime:
         date_re = re.match(
             r"\"(?P<month>[0-9]{2})\-(?P<day>[0-9]{2})\-(?P<year>[0-9]{4})\"",
-            self.parameters["Application"]["Date"],
+            self.parameters.Application.Date,
         )
-        date = date_re.groupdict()
         time_re = re.match(
             r'"(?P<hour>[0-9]{2})\:(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})"',
-            self.parameters["Application"]["Time"],
+            self.parameters.Application.Time,
         )
-        time = time_re.groupdict()
+        if date_re and time_re:
+            date = date_re.groupdict()
+            time = time_re.groupdict()
+        else:
+            raise ValueError("Date and/or time could not be parsed.")
+
         datetime_ = datetime(
             int(date["year"]),
             int(date["month"]),
@@ -212,6 +234,7 @@ class StreakImage:
             int(time["minute"]),
             int(time["second"]),
         )
+
         return datetime_
 
     def get_json(self) -> str:
@@ -222,8 +245,7 @@ class StreakImage:
             "x_offset": self.x_offset,
             "y_offset": self.y_offset,
             "file_type": self.file_type,
-            "parameters": ,
-
+            "parameters": self.parameters,
             "data": self.data,
         }
         json_dump = jt_dumps(streak_dict, indent=4)

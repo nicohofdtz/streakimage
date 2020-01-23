@@ -23,7 +23,7 @@ verbose = args.verbose
 plot = args.plot
 test = args.test
 
-image: StreakImage = None
+image: StreakImage
 data: np.ndarray = None
 
 if test:
@@ -31,11 +31,14 @@ if test:
 if os.path.isfile(file):
     image = StreakImage(file, verbose)
     data = image.data
+    print(image.get_date())
     if plot and data is not None:
         plt.pcolormesh(data)
         plt.show()
 
     # print(image.get_date())
+    json = jt_loads(image.get_json())
+    del json[data]
     # print((image.get_json()))
 else:
     print("File not found")
