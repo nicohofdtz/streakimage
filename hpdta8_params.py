@@ -3,47 +3,138 @@ from collections import namedtuple
 ParaList = namedtuple(
     "ParaList",
     "Application Camera Acquisition Grabber DisplayLUT ExternalDevices StreakCamera Spectrograph DelayBox Delay2Box Scaling Comment",
+    defaults=(None, None, None, None, None, None, None, None, None, None, None, None),
 )
 Application = namedtuple(
     "Application",
     "Date Time Software Application ApplicationTitle SoftwareVersion SoftwareDate",
+    defaults=(None, None, None, None, None, None, None),
 )
 Camera = namedtuple(
     "Camera",
-    "AMD NMD EMD SMD ADS SHT FBL EST SHA SFD SPX TNS ATP CEG CEO ESC TimingMode TriggerMode TriggerSource VerticalBinning TapNo TriggerPolarity CCDArea Binning ScanMode NoLines CameraName Type SubType",
+    "AMD EMD NMD SMD ADS SHT FBL EST SHA SFD SPX TNS ATP CEG CEO ESC TimingMode TriggerMode TriggerSource VerticalBinning TapNo TriggerPolarity CCDArea Binning ScanMode NoLines CameraName Type SubType",
+    defaults=(
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    ),
 )
 Acquisition = namedtuple(
     "Acquisition",
     "NrExposure NrTrigger ExposureTime AcqMode DataType DataTypeOfSingleImage CurveCorr DefectCorrection areSource areGRBScan pntOrigCh pntOrigFB pntBinning BytesPerPixel IsLineData BacksubCorr ShadingCorr ZAxisLabel ZAxisUnit",
+    defaults=(
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    ),
 )
 Grabber = namedtuple("Grabber", "ConfigFile Type SubType ICPMemSize")
 DisplayLUT = namedtuple(
     "DisplayLUT",
     "EntrySize LowerValue UpperValue BitRange Color LUTType LUTInverted DisplayNegative Gamma First812OvlCol Lut16xShift Lut16xOvlVal",
+    defaults=(None, None, None, None, None, None, None, None, None, None, None, None),
 )
 ExternalDevices = namedtuple(
     "ExternalDevices",
-    "TriggerDelay PostTriggerTime ExposureTime TDStatusCableConnected ConnectMonitorOut ConnectResetIn TriggerMethod UseDTBE A6538Connected CounterBoardInstalled CounterBoardIOBase GPIBIOBase",
+    "TriggerDelay PostTriggerTime ExposureTime TDStatusCableConnected ConnectMonitorOut ConnectResetIn TriggerMethod UseDTBE A6538Connected CounterBoardInstalled GPIBInstalled CounterBoardIOBase GPIBIOBase",
+    defaults=(
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    ),
 )
 Streakcamera = namedtuple(
     "Streakcamera",
-    "DeviceName PluginName InstalledOption1 GPIBBase TimeRange Mode GateMode MCPGain Shutter BlankingAmp Delay Phase FocusTimeOver PLLmode PLLstatus InpPower",
+    "UseDevice DeviceName PluginName InstalledOption1 GPIBCableConnected GPIBBase TimeRange Mode GateMode MCPGain Shutter BlankingAmp Delay Phase FocusTimeOver PLLmode PLLstatus InpPower",
+    defaults=(
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    ),
 )
 Spectrograph = namedtuple(
     "Spectrograph",
-    "DeviceName PluginName GPIBBase Wavelength Grating SlitWidth Blaze Ruling",
+    "UseDevice DeviceName PluginName GPIBCableConnected GPIBBase Wavelength Grating SlitWidth Blaze Ruling",
+    defaults=(None, None, None, None, None, None, None, None, None, None),
 )
 Delaybox = namedtuple("Delaybox", "UseDevice")
 Delay2box = namedtuple("Delay2box", "UseDevice")
 Scaling = namedtuple(
     "Scaling",
-    "ScalingXType ScalingXScale ScalingXUnit ScalingXScalingFile ScalingYType ScalingYUnit ScalingYScalingFile",
+    "ScalingXType ScalingXScale ScalingXUnit ScalingXScalingFile ScalingYType ScalingYScale ScalingYUnit ScalingYScalingFile",
+    defaults=(None, None, None, None, None, None, None, None),
 )
 Comment = namedtuple("Comment", "UserComment")
 
 
 def build_parameters_tuple(para_dict: dict):
-    # build the category tuples from the category dicts
+    # buildthecategorytuplesfromthecategorydicts
     app_tuple = Application(**para_dict["Application"])
     cam_tuple = Camera(**para_dict["Camera"])
     acq_tuple = Acquisition(**para_dict["Acquisition"])
