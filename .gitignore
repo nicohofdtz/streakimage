@@ -4,3 +4,4 @@ data.txt
 /.mypy_cache/*
 data.txt
 params.txt
+.DS_Store
