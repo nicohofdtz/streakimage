@@ -2,3 +2,5 @@ __pycache__/*
 ~$Mappe1.xlsx
 data.txt
 /.mypy_cache/*
+data.txt
+params.txt
