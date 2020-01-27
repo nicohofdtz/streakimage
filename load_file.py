@@ -37,8 +37,8 @@ if os.path.isfile(file):
         plt.show()
 
     # print(image.get_date())
-    json = jt_loads(image.get_json())
-    del json[data]
+    # json = jt_loads(image.get_json())
+    # del json[data]
     # print((image.get_json()))
 else:
     print("File not found")

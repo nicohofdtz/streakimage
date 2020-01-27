@@ -146,9 +146,9 @@ class StreakImage:
                 category_name, category_body = catergory_match.groups()
             else:
                 raise ValueError("Category name and/or body could not be parsed.")
-            
+
             key_rex = r"[a-zA-Z0-9\. ]*"
-            value_rex = r"[a-zA-Z0-9 ]*"
+            value_rex = r"[a-zA-Z0-9\- ]*"
             quoted_val_rex = r'".*?"'
             comma_or_eos_rex = r"?:,|$"
             key_val_pair_rex = (
@@ -166,6 +166,8 @@ class StreakImage:
             comment_dict[category_name.replace(" ", "")] = category_dict
 
         if self.verbose:
+            print("This is the comment string:")
+            print(comment)
             print("Comment parsed. This is the resulting dict:")
             with open("params.txt", "w") as params:
                 for category in comment_dict:
