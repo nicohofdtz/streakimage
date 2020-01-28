@@ -109,11 +109,15 @@ class StreakImage:
                 from_ += byte_per_pixel
                 to += byte_per_pixel
         # TODO: remove unused code
-        # with open("data.txt", "w") as file:
-        #     for line in data:
-        #         for num in line:
-        #             file.write(str(num) + "\t")
-        #         file.write("\n")
+        start = from_
+        end = to+400
+        with open("data.txt", "w") as file:
+            for item in range(start, end):
+                dat = int.from_bytes(
+                    binary_data[from_:to], byteorder="little", signed=False
+                )
+                file.write(str(item) + "\t")
+                file.write("\n")
         image = data
         return image
 
