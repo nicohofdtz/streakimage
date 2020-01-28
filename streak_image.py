@@ -2,11 +2,12 @@ from datetime import datetime, date
 from enum import Enum
 import re
 import numpy as np
+import pandas as pd
 import argparse
 import json
 from json_tricks import dumps as jt_dumps
-from collections import OrderedDict
-from hpdta8_params import ParaList, build_parameters_tuple
+from collections import OrderedDict, namedtuple
+from .hpdta8_params import ParaList, build_parameters_tuple
 
 # from hpdta8_params import build_parameters_tuple
 
@@ -38,7 +39,7 @@ class StreakImage:
         self.x_offset: int
         self.y_offset: int
         self.file_type: FileType
-        self.data: np.ndarray
+        self.data: pd.DataFrame
         self.comment_string: str
         self.parameters: ParaList
         self.verbose: bool = verbose
@@ -83,13 +84,13 @@ class StreakImage:
             self.file_type = FileType(file_type_int)
 
             nnn = 64 + self.comment_length
-            self.data = self.parse_data(file_content[nnn:])
+            self.parse_data(file_content[nnn:])
             self.comment_string = file_content[64:nnn].decode("utf-8")
             self.parameters = self.parse_comment(self.comment_string)
             # build_parameters_tuple(self.parameters)
 
     def parse_data(self, binary_data: bytes):
-        """Parse given data bytes to 2d list
+        """Parse given data bytes and compile axes
 
         args:
             binary_data: The part of the file containing the intensity data.
@@ -107,12 +108,19 @@ class StreakImage:
                 )
                 from_ += byte_per_pixel
                 to += byte_per_pixel
-        with open("data.txt", "w") as file:
-            for line in data:
-                for num in line:
-                    file.write(str(num) + "\t")
-                file.write("\n")
-        return data
+        # TODO: remove unused code
+        # with open("data.txt", "w") as file:
+        #     for line in data:
+        #         for num in line:
+        #             file.write(str(num) + "\t")
+        #         file.write("\n")
+        image = data
+        return image
+
+    def get_axes(self) -> namedtuple:
+        Axes = namedtuple("Axes", "x y")
+        x_axis = np.array
+        pass
 
     def parse_comment(self, comment: str) -> ParaList:
         """Parse the comment string and return it as a dictionary
@@ -145,7 +153,8 @@ class StreakImage:
             if catergory_match:
                 category_name, category_body = catergory_match.groups()
             else:
-                raise ValueError("Category name and/or body could not be parsed.")
+                raise ValueError(
+                    "Category name and/or body could not be parsed.")
 
             key_rex = r"[a-zA-Z0-9\. ]*"
             value_rex = r"[a-zA-Z0-9\- ]*"
@@ -192,7 +201,8 @@ class StreakImage:
 
         if self.height != other.height:
             raise IndexError(
-                "Height differs: {:s} vs {:s}".format(self.height, other.height)
+                "Height differs: {:s} vs {:s}".format(
+                    self.height, other.height)
             )
 
         if self.width != other.width:

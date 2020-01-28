@@ -1,0 +1,194 @@
+[Application],Date="03-20-2019",Time="07:49:14",Software="HPD-TA",Application=2,ApplicationT
+al Temporal Analyzer",SoftwareVersion="9.1",SoftwareDate="07.05.2007"                       
+[Camera],AMD=N,NMD=F,EMD=L,SMD=S,ADS=0,SHT=1,FBL=180,EST=1,SHA=F,SFD=F,SPX=2,TNS=1,ATP=N,CEG
+nternal timing",TriggerMode="Level trigger",TriggerSource="BNC",VerticalBinning="1",TapNo="1
+Area="1280 x 1024",Binning="2 x 2",ScanMode="Superpixel",NoLines=1024,CameraName="C4742-95",
+[Acquisition],NrExposure=12,NrTrigger=0,ExposureTime=10 s,AcqMode=4,DataType=8,DataTypeOfSin
+tCorrection=0,areSource="0,0,640,512",areGRBScan="0,0,640,512",pntOrigCh="0,0",pntOrigFB="0,
+Pixel=4,IsLineData=0,BacksubCorr=0,ShadingCorr=0,ZAxisLabel=Intensity,ZAxisUnit=Count       
+[Grabber],ConfigFile="C:\Programme\HPDTA\HPDTA810\digital.cnf",Type=2,SubType=1,ICPMemSize=0
+[DisplayLUT],EntrySize=9,LowerValue=534,UpperValue=2691,BitRange="16x bit",Color=2,LUTType=0
+ve=0,Gamma=1,First812OvlCol=1,Lut16xShift=0,Lut16xOvlVal=12276                              
+[ExternalDevices],TriggerDelay=150,PostTriggerTime=10,ExposureTime=10,TDStatusCableConnected
+ctResetIn=0,TriggerMethod=0,UseDTBE=0,A6538Connected=0,CounterBoardInstalled=0,GPIBInstalled
+PIBIOBase=0                                                                                 
+[Streak camera],UseDevice=-1,DeviceName="C6860",PluginName="M6861",InstalledOption1=M6858,GP
+=2,Time Range="6",Mode="Focus",Gate Mode="Normal",MCP Gain="40",Shutter="Open",Blanking Amp.
+ocusTimeOver="5",PLL mode="Locked",PLL status="Initial",Inp. Power="Low"                    
+[Spectrograph],UseDevice=-1,DeviceName="Chromex 250IS",PluginName="",GPIBCableConnected=-1,G
+Grating="50 g/mm",Slit Width="50",Blaze="600",Ruling="50"                                   
+[Delay box],UseDevice=0                                                                     
+[Delay2 box],UseDevice=0                                                                    
+[Scaling],ScalingXType=2,ScalingXScale=1,ScalingXUnit="nm",ScalingXScalingFile="#1312938,064
+ale=1.956947E-03,ScalingYUnit="nm",ScalingYScalingFile="Focus mode"[Comment],UserComment="" 
+
+
+Application:
+------------------------------------------------------------
+|       Date..................:"03-20-2019"                |
+|       Time..................:"07:49:14"                  |
+|       Software..............:"HPD-TA"                    |
+|       Application...........:2                           |
+|       ApplicationTitle......:"High Performance Digital Temporal Analyzer"|
+|       SoftwareVersion.......:"9.1"                       |
+|       SoftwareDate..........:"07.05.2007"                |
+------------------------------------------------------------
+
+Camera:
+------------------------------------------------------------
+|       AMD...................:N                           |
+|       NMD...................:F                           |
+|       EMD...................:L                           |
+|       SMD...................:S                           |
+|       ADS...................:0                           |
+|       SHT...................:1                           |
+|       FBL...................:180                         |
+|       EST...................:1                           |
+|       SHA...................:F                           |
+|       SFD...................:F                           |
+|       SPX...................:2                           |
+|       TNS...................:1                           |
+|       ATP...................:N                           |
+|       CEG...................:0                           |
+|       CEO...................:0                           |
+|       ESC...................:B                           |
+|       TimingMode............:"Internal timing"           |
+|       TriggerMode...........:"Level trigger"             |
+|       TriggerSource.........:"BNC"                       |
+|       VerticalBinning.......:"1"                         |
+|       TapNo.................:"1"                         |
+|       TriggerPolarity.......:"neg."                      |
+|       CCDArea...............:"1280 x 1024"               |
+|       Binning...............:"2 x 2"                     |
+|       ScanMode..............:"Superpixel"                |
+|       NoLines...............:1024                        |
+|       CameraName............:"C4742-95"                  |
+|       Type..................:7                           |
+|       SubType...............:7                           |
+------------------------------------------------------------
+
+Acquisition:
+------------------------------------------------------------
+|       NrExposure............:12                          |
+|       NrTrigger.............:0                           |
+|       ExposureTime..........:10 s                        |
+|       AcqMode...............:4                           |
+|       DataType..............:8                           |
+|       DataTypeOfSingleImage.:2                           |
+|       CurveCorr.............:0                           |
+|       DefectCorrection......:0                           |
+|       areSource.............:"0,0,640,512"               |
+|       areGRBScan............:"0,0,640,512"               |
+|       pntOrigCh.............:"0,0"                       |
+|       pntOrigFB.............:"0,0"                       |
+|       pntBinning............:"2,2"                       |
+|       BytesPerPixel.........:4                           |
+|       IsLineData............:0                           |
+|       BacksubCorr...........:0                           |
+|       ShadingCorr...........:0                           |
+|       ZAxisLabel............:Intensity                   |
+|       ZAxisUnit.............:Count                       |
+------------------------------------------------------------
+
+Grabber:
+------------------------------------------------------------
+|       ConfigFile............:"C:\Programme\HPDTA\HPDTA810\digital.cnf"|
+|       Type..................:2                           |
+|       SubType...............:1                           |
+|       ICPMemSize............:0                           |
+------------------------------------------------------------
+
+DisplayLUT:
+------------------------------------------------------------
+|       EntrySize.............:9                           |
+|       LowerValue............:534                         |
+|       UpperValue............:2691                        |
+|       BitRange..............:"16x bit"                   |
+|       Color.................:2                           |
+|       LUTType...............:0                           |
+|       LUTInverted...........:0                           |
+|       DisplayNegative.......:0                           |
+|       Gamma.................:1                           |
+|       First812OvlCol........:1                           |
+|       Lut16xShift...........:0                           |
+|       Lut16xOvlVal..........:12276                       |
+------------------------------------------------------------
+
+ExternalDevices:
+------------------------------------------------------------
+|       TriggerDelay..........:150                         |
+|       PostTriggerTime.......:10                          |
+|       ExposureTime..........:10                          |
+|       TDStatusCableConnected:0                           |
+|       ConnectMonitorOut.....:0                           |
+|       ConnectResetIn........:0                           |
+|       TriggerMethod.........:0                           |
+|       UseDTBE...............:0                           |
+|       A6538Connected........:0                           |
+|       CounterBoardInstalled.:0                           |
+|       GPIBInstalled.........:-1                          |
+|       CounterBoardIOBase....:560                         |
+|       GPIBIOBase............:0                           |
+------------------------------------------------------------
+
+Streakcamera:
+------------------------------------------------------------
+|       UseDevice.............:-1                          |
+|       DeviceName............:"C6860"                     |
+|       PluginName............:"M6861"                     |
+|       InstalledOption1......:M6858                       |
+|       GPIBCableConnected....:-1                          |
+|       GPIBBase..............:2                           |
+|       TimeRange.............:"6"                         |
+|       Mode..................:"Focus"                     |
+|       GateMode..............:"Normal"                    |
+|       MCPGain...............:"40"                        |
+|       Shutter...............:"Open"                      |
+|       BlankingAmp...........:"off"                       |
+|       Delay.................:"0"                         |
+|       Phase.................:"0"                         |
+|       FocusTimeOver.........:"5"                         |
+|       PLLmode...............:"Locked"                    |
+|       PLLstatus.............:"Initial"                   |
+|       InpPower..............:"Low"                       |
+------------------------------------------------------------
+
+Spectrograph:
+------------------------------------------------------------
+|       UseDevice.............:-1                          |
+|       DeviceName............:"Chromex 250IS"             |
+|       PluginName............:""                          |
+|       GPIBCableConnected....:-1                          |
+|       GPIBBase..............:13                          |
+|       Wavelength............:"530"                       |
+|       Grating...............:"50 g/mm"                   |
+|       SlitWidth.............:"50"                        |
+|       Blaze.................:"600"                       |
+|       Ruling................:"50"                        |
+------------------------------------------------------------
+
+Delaybox:
+------------------------------------------------------------
+|       UseDevice.............:0                           |
+------------------------------------------------------------
+
+Delay2box:
+------------------------------------------------------------
+|       UseDevice.............:0                           |
+------------------------------------------------------------
+
+Scaling:
+------------------------------------------------------------
+|       ScalingXType..........:2                           |
+|       ScalingXScale.........:1                           |
+|       ScalingXUnit..........:"nm"                        |
+|       ScalingXScalingFile...:"#1312938,0640"             |
+|       ScalingYType..........:1                           |
+|       ScalingYUnit..........:"nm"                        |
+|       ScalingYScalingFile...:"Focus mode"                |
+------------------------------------------------------------
+
+Comment:
+------------------------------------------------------------
+|       UserComment...........:""                          |
+------------------------------------------------------------
