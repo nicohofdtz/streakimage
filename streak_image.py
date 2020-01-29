@@ -7,7 +7,7 @@ import argparse
 import json
 from json_tricks import dumps as jt_dumps
 from collections import OrderedDict, namedtuple
-from .hpdta8_params import ParaList, build_parameters_tuple
+from hpdta8_params import ParaList, build_parameters_tuple
 
 # from hpdta8_params import build_parameters_tuple
 
@@ -110,13 +110,17 @@ class StreakImage:
                 to += byte_per_pixel
         # TODO: remove unused code
         start = from_
-        end = to+400
+        end = to + 40
         with open("data.txt", "w") as file:
-            for item in range(start, end):
-                dat = int.from_bytes(
-                    binary_data[from_:to], byteorder="little", signed=False
-                )
-                file.write(str(item) + "\t")
+            for steps in range(1, 20):
+                from_ = start
+                while from_ < end:
+
+                    dat = int.from_bytes(
+                        binary_data[14:64], byteorder="little", signed=False
+                    )
+                    file.write(str(dat) + "\t")
+                    from_ += steps
                 file.write("\n")
         image = data
         return image
@@ -157,8 +161,7 @@ class StreakImage:
             if catergory_match:
                 category_name, category_body = catergory_match.groups()
             else:
-                raise ValueError(
-                    "Category name and/or body could not be parsed.")
+                raise ValueError("Category name and/or body could not be parsed.")
 
             key_rex = r"[a-zA-Z0-9\. ]*"
             value_rex = r"[a-zA-Z0-9\- ]*"
@@ -205,8 +208,7 @@ class StreakImage:
 
         if self.height != other.height:
             raise IndexError(
-                "Height differs: {:s} vs {:s}".format(
-                    self.height, other.height)
+                "Height differs: {:s} vs {:s}".format(self.height, other.height)
             )
 
         if self.width != other.width:

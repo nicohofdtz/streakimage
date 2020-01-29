@@ -30,8 +30,7 @@ if test:
     file = "test/test_file2.img"
 if os.path.isfile(file):
     image = StreakImage(file, verbose)
-    data = image.data
-    print(image.get_date())
+    # data = image.data
     if plot and data is not None:
         plt.pcolormesh(data)
         plt.show()
