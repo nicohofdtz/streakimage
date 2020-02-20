@@ -7,7 +7,8 @@ import argparse
 import json
 from json_tricks import dumps as jt_dumps
 from collections import OrderedDict, namedtuple
-from hpdta8_params import ParaList, build_parameters_tuple
+from .hpdta8_params import ParaList, build_parameters_tuple
+import struct
 
 # from hpdta8_params import build_parameters_tuple
 
@@ -84,12 +85,12 @@ class StreakImage:
             self.file_type = FileType(file_type_int)
 
             nnn = 64 + self.comment_length
-            self.parse_data(file_content[nnn:])
+            self.data = self.parse_data(file_content[nnn:])
             self.comment_string = file_content[64:nnn].decode("utf-8")
             self.parameters = self.parse_comment(self.comment_string)
             # build_parameters_tuple(self.parameters)
 
-    def parse_data(self, binary_data: bytes):
+    def parse_data(self, binary_data: bytes) -> pd.DataFrame:
         """Parse given data bytes and compile axes
 
         args:
@@ -108,27 +109,23 @@ class StreakImage:
                 )
                 from_ += byte_per_pixel
                 to += byte_per_pixel
-        # TODO: remove unused code
-        start = from_
-        end = to + 40
-        with open("data.txt", "w") as file:
-            for steps in range(1, 20):
-                from_ = start
-                while from_ < end:
+        wl_axis, time_axis = self.get_axes(binary_data)
+        return pd.DataFrame(data=data, index=time_axis, columns=wl_axis)
 
-                    dat = int.from_bytes(
-                        binary_data[14:64], byteorder="little", signed=False
-                    )
-                    file.write(str(dat) + "\t")
-                    from_ += steps
-                file.write("\n")
-        image = data
-        return image
-
-    def get_axes(self) -> namedtuple:
-        Axes = namedtuple("Axes", "x y")
-        x_axis = np.array
-        pass
+    def get_axes(self, binary_data: bytes) -> tuple:
+        Axes = namedtuple("Axes", "wl time")
+        offset = self.width * 4 + self.height * 4
+        wl_axis = np.asarray(
+            (struct.unpack_from("f" * (self.width), binary_data[-offset:]))
+        )
+        time_axis = np.asarray(
+            (
+                struct.unpack_from(
+                    "f" * (self.height), binary_data[(-offset + self.width * 4) :]
+                )
+            )
+        )
+        return Axes(wl=wl_axis, time=time_axis)
 
     def parse_comment(self, comment: str) -> ParaList:
         """Parse the comment string and return it as a dictionary
@@ -268,6 +265,9 @@ class StreakImage:
         }
         json_dump = jt_dumps(streak_dict, indent=4)
         return json_dump
+
+    def get_dimensions(self) -> tuple:
+        return (self.height, self.width)
 
 
 # class NumpyEncoder(json.JSONEncoder):
