@@ -27,7 +27,7 @@ image: StreakImage
 data: np.ndarray = None
 
 if test:
-    file = "test/test_file2.img"
+    file = "test/191030 000.img"
 if os.path.isfile(file):
     image = StreakImage(file, verbose)
     # data = image.data
