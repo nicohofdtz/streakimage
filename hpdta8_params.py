@@ -133,8 +133,16 @@ Scaling = namedtuple(
 Comment = namedtuple("Comment", "UserComment")
 
 
-def build_parameters_tuple(para_dict: dict):
-    # buildthecategorytuplesfromthecategorydicts
+def build_parameters_tuple(para_dict: dict) -> tuple:
+    """ Builds the category tuples from the category dicts
+    
+    args:
+        para_dict: the comment dictionary
+
+    return:
+        The returned object ist a namedtuple of all parameters.
+
+    """
     app_tuple = Application(**para_dict["Application"])
     cam_tuple = Camera(**para_dict["Camera"])
     acq_tuple = Acquisition(**para_dict["Acquisition"])

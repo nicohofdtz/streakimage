@@ -34,6 +34,7 @@ class StreakImage:
     """
 
     def __init__(self, file_path: str, verbose: bool = False):
+        # the hptda fields
         self.comment_length: int
         self.width: int
         self.height: int
@@ -43,7 +44,10 @@ class StreakImage:
         self.data: pd.DataFrame
         self.comment_string: str
         self.parameters: ParaList
+        # the custom fields
         self.verbose: bool = verbose
+        self.bg_sub_corr: bool
+        self.transient: pd.Series = None
 
         self.parse_file(file_path)
         # print("Date:", self.date)
@@ -88,7 +92,7 @@ class StreakImage:
             self.data = self.parse_data(file_content[nnn:])
             self.comment_string = file_content[64:nnn].decode("utf-8")
             self.parameters = self.parse_comment(self.comment_string)
-            # build_parameters_tuple(self.parameters)
+            self.bg_sub_corr = self.parameters.Acquisition.BacksubCorr == "1"
 
     def parse_data(self, binary_data: bytes) -> pd.DataFrame:
         """Parse given data bytes and compile axes
@@ -163,7 +167,7 @@ class StreakImage:
             key_rex = r"[a-zA-Z0-9\. ]*"
             value_rex = r"[a-zA-Z0-9\- ]*"
             quoted_val_rex = r'".*?"'
-            comma_or_eos_rex = r"?:,|$"
+            comma_or_eos_rex = r"?:,|$| $"
             key_val_pair_rex = (
                 rf"({key_rex})=({value_rex}|{quoted_val_rex})({comma_or_eos_rex})"
             )
@@ -266,12 +270,6 @@ class StreakImage:
         json_dump = jt_dumps(streak_dict, indent=4)
         return json_dump
 
-    def get_dimensions(self) -> tuple:
-        return (self.height, self.width)
+        # def get_dimensions(self) -> tuple:
+        # return (self.height, self.width)
 
-
-# class NumpyEncoder(json.JSONEncoder):
-#     def default(self, obj):
-#         if isinstance(obj, np.ndarray):
-#             return obj.tolist()
-#         return json.JSONEncoder.default(self, obj)
