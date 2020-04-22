@@ -61,8 +61,40 @@ def subtract_bg(image: StreakImage, bg: StreakImage):
         bg: The bg to subtract.
     """
     if not image.bg_sub_corr:
+        wrong_bg = bg_fits_data(image, bg)
+        if wrong_bg:
+            raise ValueError("Background parameters don't match image parameters.")
+        if not (bg.data.columns == image.data.columns).all():
+            bg.data.columns = image.data.columns
         image.data = image.data - bg.data
         image.bg_sub_corr = True
     else:
         raise ValueError("Background already subtracted.")
 
+
+def bg_fits_data(image: StreakImage, bg: StreakImage) -> Union[str, None]:
+    non_matching_params = ""
+    if (
+        not image.parameters.StreakCamera["MCPGain"]
+        == bg.parameters.StreakCamera["MCPGain"]
+    ):
+        non_matching_params += "gain, "
+    if (
+        not image.parameters.StreakCamera["TimeRange"]
+        == bg.parameters.StreakCamera["TimeRange"]
+    ):
+        non_matching_params += "time range, "
+    if (
+        not image.parameters.Acquisition["NrExposure"]
+        == bg.parameters.Acquisition["NrExposure"]
+    ):
+        non_matching_params += "integration, "
+    if (
+        not image.parameters.Acquisition["ExposureTime"]
+        == bg.parameters.Acquisition["ExposureTime"]
+    ):
+        non_matching_params += "exposure time, "
+    if non_matching_params == "":
+        return None
+    else:
+        return non_matching_params[:-2]
