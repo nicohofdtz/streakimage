@@ -1,4 +1,4 @@
-from streak_image import StreakImage
+from .streak_image import StreakImage
 import argparse
 import matplotlib.pyplot as plt
 import os
@@ -29,7 +29,7 @@ data: np.ndarray = None
 if test:
     file = "test/calib_files/100.img"
 if os.path.isfile(file):
-    image = StreakImage(file, verbose)
+    image = StreakImage(file, verbose, correction=True)
     # data = image.data
     if plot and data is not None:
         plt.pcolormesh(data)
@@ -41,4 +41,3 @@ if os.path.isfile(file):
     # print((image.get_json()))
 else:
     print("File not found")
-
