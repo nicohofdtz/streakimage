@@ -9,6 +9,9 @@ from json_tricks import dumps as jt_dumps
 from collections import OrderedDict, namedtuple
 from .hpdta8_params import ParaList, build_parameters_tuple
 import struct
+import os
+from typing import Optional
+
 
 # from hpdta8_params import build_parameters_tuple
 
@@ -29,11 +32,19 @@ class StreakImage:
     """Parses and holds the data of an recorded image
 
         args:
-            file_path: Path to the file to be parsed
-
+            file_path: path to the file to be parsed
+            verbose: print verbose comments
+            correction: apply camera correction
     """
 
-    def __init__(self, file_path: str, verbose: bool = False):
+    def __init__(
+        self,
+        file_path: str,
+        verbose: bool = False,
+        correction: bool = True,
+        bg=None,
+        bg_dict=None,
+    ):
         # the hptda fields
         self.comment_length: int
         self.width: int
@@ -46,17 +57,30 @@ class StreakImage:
         self.parameters: ParaList
         # the custom fields
         self.verbose: bool = verbose
+        self.correction: bool = correction
+        self.bg: StreakImage = bg
+        self.bg_dict: dict = bg_dict
         self.bg_sub_corr: bool
         self.transient: pd.Series = None
 
         self.parse_file(file_path)
-        # print("Date:", self.date)
         if self.verbose:
             print("Comment length:", self.comment_length)
             print("Width:", self.width, "Height:", self.height)
             print("x-offset:", self.x_offset, "y-offset", self.y_offset)
             print("file-type:", self.file_type.name)
             print("comment:", self.comment_string)
+        if self.bg_dict and not self.bg:
+            bg_str = f"ST{self.parameters.StreakCamera.TimeRange}_"
+            bg_str += f"g{self.parameters.StreakCamera.MCPGain}_"
+            bg_str += f"{self.parameters.Acquisition.NrExposure}x"
+            exp = self.parameters.Acquisition.ExposureTime
+            bg_str += f"{exp[0]}{(len(exp.split(' ')[0])-1)*'0'}{exp.split(' ')[1]}"
+            self.bg = self.bg_dict[f"{bg_str}"]
+        if self.bg:
+            self.apply_bg_subtraction()
+        if self.correction:
+            self.apply_camera_correction()
 
     def parse_file(self, file_path: str):
         """Read the given file and parse the content to class fields.
@@ -176,7 +200,7 @@ class StreakImage:
                 re.findall(key_val_pair_rex, category_body)
             )
             category_dict = {
-                k.replace(" ", "").replace(".", ""): v
+                k.replace(" ", "").replace(".", ""): v.replace('"', "")
                 for k, v in category_dict_with_spaces.items()
             }
 
@@ -204,7 +228,7 @@ class StreakImage:
         param_list = build_parameters_tuple(comment_dict)
         return param_list
 
-    def is_compatible(self, other: "StreakImage"):
+    def is_compatible(self, other: "StreakImage") -> bool:
         """Compare file type and dimension of given classes"""
 
         if self.height != other.height:
@@ -219,6 +243,28 @@ class StreakImage:
 
         if self.file_type != other.file_type:
             raise ValueError("File types do not match.")
+
+        return True
+
+    def apply_camera_correction(self):
+        timerange: str = self.parameters.StreakCamera.TimeRange
+        correction = np.load(
+            os.path.dirname(__file__)
+            + "/corrections/ST"
+            + timerange
+            + "_correction_"
+            + str(self.width)
+            + "x"
+            + str(self.height)
+            + ".npy"
+        )
+        self.data = self.data / correction
+
+    def apply_bg_subtraction(self):
+        if self.is_compatible(self.bg):
+            self.data = self.data - self.bg.data.values
+        else:
+            raise TypeError("Background is not compatible to data.")
 
     def exportSDF(self, path):
         """Export the data to the SDF file format.
@@ -272,4 +318,3 @@ class StreakImage:
 
         # def get_dimensions(self) -> tuple:
         # return (self.height, self.width)
-
