@@ -81,6 +81,7 @@ class StreakImage:
             self.apply_bg_subtraction()
         if self.correction:
             self.apply_camera_correction()
+        self.shift_time_scale()
 
     def parse_file(self, file_path: str):
         """Read the given file and parse the content to class fields.
@@ -265,6 +266,15 @@ class StreakImage:
             self.data = self.data - self.bg.data.values
         else:
             raise TypeError("Background is not compatible to data.")
+
+    def shift_time_scale(self):
+        max = self.time_of_max()
+        t_max = self.data[max].idxmax()
+        self.data.index -= t_max
+
+    def time_of_max(self):
+        spec = np.sum(self.data, axis=0)
+        return spec.idxmax()
 
     def exportSDF(self, path):
         """Export the data to the SDF file format.
