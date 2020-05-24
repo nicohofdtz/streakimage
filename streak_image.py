@@ -150,7 +150,8 @@ class StreakImage:
         time_axis = np.asarray(
             (
                 struct.unpack_from(
-                    "f" * (self.height), binary_data[(-offset + self.width * 4) :]
+                    "f" *
+                    (self.height), binary_data[(-offset + self.width * 4):]
                 )
             )
         )
@@ -187,7 +188,8 @@ class StreakImage:
             if catergory_match:
                 category_name, category_body = catergory_match.groups()
             else:
-                raise ValueError("Category name and/or body could not be parsed.")
+                raise ValueError(
+                    "Category name and/or body could not be parsed.")
 
             key_rex = r"[a-zA-Z0-9\. ]*"
             value_rex = r"[a-zA-Z0-9\- ]*"
@@ -234,7 +236,8 @@ class StreakImage:
 
         if self.height != other.height:
             raise IndexError(
-                "Height differs: {:s} vs {:s}".format(self.height, other.height)
+                "Height differs: {:s} vs {:s}".format(
+                    self.height, other.height)
             )
 
         if self.width != other.width:
@@ -264,6 +267,7 @@ class StreakImage:
     def apply_bg_subtraction(self):
         if self.is_compatible(self.bg):
             self.data = self.data - self.bg.data.values
+            self.bg_sub_corr = True
         else:
             raise TypeError("Background is not compatible to data.")
 
