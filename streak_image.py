@@ -11,6 +11,7 @@ from .hpdta8_params import ParaList, build_parameters_tuple
 import struct
 import os
 from typing import Optional
+import configparser
 
 
 # from hpdta8_params import build_parameters_tuple
@@ -80,7 +81,7 @@ class StreakImage:
             self.apply_bg_subtraction()
         if self.correction:
             self.apply_camera_correction()
-        self.shift_time_scale()
+        self.shift_0_to_max()
 
     def parse_file(self, file_path: str):
         """Read the given file and parse the content to class fields.
@@ -246,6 +247,39 @@ class StreakImage:
 
         return True
 
+    def apply_bg_subtraction(self):
+        if self.is_compatible(self.bg):
+            self.data = self.data - self.bg.data.values
+            self.bg_sub_corr = True
+        else:
+            raise TypeError("Background is not compatible to data.")
+
+    def apply_manual_offset(self, ranges: list):
+        offset = 0
+        for range_ in ranges:
+            a = range_[0][0]
+            b = range_[0][1]
+            c = range_[1][0]
+            d = range_[1][1]
+
+            offset += (self.data.iloc[c:d].loc[:, b:a]).mean().mean()
+        self.data -= offset
+
+    def apply_gain_correction(self):
+        config = configparser.ConfigParser()
+        config.read(os.path.dirname(__file__) + "/corrections/gain_correction.conf")
+        gain = self.parameters.StreakCamera.MCPGain
+        cfak = float(config["GAIN-Correction"][gain])
+        dat = self.data / cfak
+        self.data = dat
+
+    def apply_int_correction(self):
+        exp_time = int(self.parameters.Acquisition.ExposureTime.strip(" ms"))
+        nr_exp = int(self.parameters.Acquisition.NrExposure)
+        cfak = exp_time * nr_exp
+        dat = self.data / cfak
+        self.data = dat
+
     def apply_camera_correction(self):
         timerange: str = self.parameters.StreakCamera.TimeRange
         correction = np.load(
@@ -260,14 +294,7 @@ class StreakImage:
         )
         self.data = self.data / correction
 
-    def apply_bg_subtraction(self):
-        if self.is_compatible(self.bg):
-            self.data = self.data - self.bg.data.values
-            self.bg_sub_corr = True
-        else:
-            raise TypeError("Background is not compatible to data.")
-
-    def shift_time_scale(self):
+    def shift_0_to_max(self):
         max = self.time_of_max()
         t_max = self.data[max].idxmax()
         self.data.index -= t_max
@@ -275,6 +302,9 @@ class StreakImage:
     def time_of_max(self):
         spec = np.sum(self.data, axis=0)
         return spec.idxmax()
+
+    def shift_time_scale(self, shift_value):
+        self.data.index += shift_value
 
     def exportSDF(self, path):
         """Export the data to the SDF file format.
