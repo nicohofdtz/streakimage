@@ -42,7 +42,7 @@ class StreakImage:
         self,
         file_path: str,
         verbose: bool = False,
-        correction: bool = True,
+        correction: bool = False,
         bg=None,
         bg_dict=None,
     ):
@@ -70,7 +70,7 @@ class StreakImage:
             print("Width:", self.width, "Height:", self.height)
             print("x-offset:", self.x_offset, "y-offset", self.y_offset)
             print("file-type:", self.file_type.name)
-            print("comment:", self.comment_string)
+            #print("comment:", self.comment_string)
         if self.bg_dict and not self.bg:
             bg_str = f"ST{self.parameters.StreakCamera.TimeRange}_"
             bg_str += f"g{self.parameters.StreakCamera.MCPGain}_"
@@ -172,27 +172,26 @@ class StreakImage:
         # build 1st level dictionary
         comment_dict: OrderedDict = OrderedDict()
         # split comment string into category substrings
-        comment_list: list = comment.split(sep="\r\n")
-
-        # last entry needs special treatment due to missing line break
-        if comment_list[-1].find("[Comment]") > 0:
-            corrected_list = re.split(r"(\[Comment\],.*)", comment_list[-1])
-            comment_list[-1] = corrected_list[0]
-            comment_list.append(corrected_list[1])
+        category_rex = r"(\[[\w ]+?\],(?:.|\n)*?(?=\[|\Z))"
+        comment_list = re.split(category_rex, comment)
+        comment_list = [item for item in comment_list if item != '']
 
         # build 2nd level dictionaries
         for category in comment_list:
+            #remove linebreaks
+            category = category.replace("\r"," - ")
+            category = category.replace("\n"," - ")
             # category name is written in brackets and is extracted first
-            catergory_match = re.match(r"\[(.*?)\]\,(.*)", category)
-            if catergory_match:
-                category_name, category_body = catergory_match.groups()
+            category_match = re.match(r"\[(.*?)\]\,(.*)", category)
+            if category_match:
+                category_name, category_body = category_match.groups()
             else:
-                raise ValueError("Category name and/or body could not be parsed.")
+                raise ValueError(f"Category name and/or body could not be parsed.\ncategory string:\n{category}")
 
-            key_rex = r"[a-zA-Z0-9\. ]*"
-            value_rex = r"[a-zA-Z0-9\- ]*"
-            quoted_val_rex = r'".*?"'
-            comma_or_eos_rex = r"?:,|$| $"
+            key_rex = r"[a-zA-Z0-9. ]*"
+            value_rex = r"[a-zA-Z0-9\- ]+"
+            quoted_val_rex = r'"(?:.|\n)*?"'
+            comma_or_eos_rex = r"?:,|$| $|"
             key_val_pair_rex = (
                 rf"({key_rex})=({value_rex}|{quoted_val_rex})({comma_or_eos_rex})"
             )
@@ -201,7 +200,7 @@ class StreakImage:
                 re.findall(key_val_pair_rex, category_body)
             )
             category_dict = {
-                k.replace(" ", "").replace(".", ""): v.replace('"', "")
+                k.replace(" ", "").replace(".", ""): v.replace('"', "").strip(" -")
                 for k, v in category_dict_with_spaces.items()
             }
 
@@ -218,14 +217,16 @@ class StreakImage:
                     print("-" * 60 + "\n")
                     print(category + ":")
                     print("-" * 60)
+                    if category == "comment" and False:
+                        print(comment_dict["Comment"]["UserComment"])
+                    else:
                     keys: str = ""
                     for key in comment_dict[category]:
                         value = comment_dict[category][key]
                         print("|\t{:.<22s}:{: <28s}".format(key, value) + "|")
                         keys = keys + key + " "
-                    # ToDo: remove
-                    # params.write(keys[:-1] + "')\n")
                 print("-" * 60 + "\n")
+            print(comment_dict)
         param_list = build_parameters_tuple(comment_dict)
         return param_list
 
