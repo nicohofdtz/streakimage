@@ -217,14 +217,14 @@ class StreakImage:
                     print("-" * 60 + "\n")
                     print(category + ":")
                     print("-" * 60)
-                    if category == "comment" and False:
+                    if category == "comment":
                         print(comment_dict["Comment"]["UserComment"])
                     else:
-                    keys: str = ""
-                    for key in comment_dict[category]:
-                        value = comment_dict[category][key]
-                        print("|\t{:.<22s}:{: <28s}".format(key, value) + "|")
-                        keys = keys + key + " "
+                        keys: str = ""
+                        for key in comment_dict[category]:
+                            value = comment_dict[category][key]
+                            print("|\t{:.<22s}:{: <28s}".format(key, value) + "|")
+                            keys = keys + key + " "
                 print("-" * 60 + "\n")
             print(comment_dict)
         param_list = build_parameters_tuple(comment_dict)
@@ -356,6 +356,13 @@ class StreakImage:
         }
         json_dump = jt_dumps(streak_dict, indent=4)
         return json_dump
+
+    def get_bg_id(self) -> str:
+        id = f"bg_{self.parameters.StreakCamera.TimeRange}_"
+        id += f"{self.parameters.StreakCamera.MCPGain}_"
+        id += f"{self.parameters.Acquisition.NrExposure}x"
+        id += f"{self.parameters.Acquisition.ExposureTime.replace(' ','')}"
+        return id
 
         # def get_dimensions(self) -> tuple:
         # return (self.height, self.width)
