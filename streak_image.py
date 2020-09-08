@@ -347,11 +347,14 @@ class StreakImage:
         return json_dump
 
     def get_bg_id(self) -> str:
-        id = f"bg_{self.parameters.StreakCamera.TimeRange}_"
-        id += f"{self.parameters.StreakCamera.MCPGain}_"
+        id = f"bg_ST{self.parameters.StreakCamera.TimeRange}_"
+        id += f"g{self.parameters.StreakCamera.MCPGain}_"
         id += f"{self.parameters.Acquisition.NrExposure}x"
         id += f"{self.parameters.Acquisition.ExposureTime.replace(' ','')}"
         return id
+
+    def get_id(self) -> str:
+        return os.path.basename(self.file_path)[:12]
 
         # def get_dimensions(self) -> tuple:
         # return (self.height, self.width)
