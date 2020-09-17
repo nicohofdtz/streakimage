@@ -1,4 +1,4 @@
-from .streak_image import StreakImage
+from pl_py import StreakImage
 import argparse
 import matplotlib.pyplot as plt
 import os

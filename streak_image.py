@@ -31,11 +31,12 @@ class FileType(Enum):
 class StreakImage:
     """Parses and holds the data of an recorded image
 
-        args:
-            file_path: path to the file to be parsed
-            verbose: print verbose comments
-            correction: apply camera correction
+    args:
+        file_path: path to the file to be parsed
+        verbose: print verbose comments
+        correction: apply camera correction
     """
+
     def __init__(
         self,
         file_path: str,
@@ -69,7 +70,7 @@ class StreakImage:
             print("Width:", self.width, "Height:", self.height)
             print("x-offset:", self.x_offset, "y-offset", self.y_offset)
             print("file-type:", self.file_type.name)
-            #print("comment:", self.comment_string)
+            # print("comment:", self.comment_string)
         if self.bg_dict and not self.bg:
             bg_str = f"ST{self.parameters.StreakCamera.TimeRange}_"
             bg_str += f"g{self.parameters.StreakCamera.MCPGain}_"
@@ -92,24 +93,24 @@ class StreakImage:
         with open(file_path, "rb") as file:
             file_content = file.read()
             self.im_chars = file_content[0:2].decode("utf-8")
-            self.comment_length = int.from_bytes(file_content[2:4],
-                                                 byteorder="little",
-                                                 signed=False)
-            self.width = int.from_bytes(file_content[4:6],
-                                        byteorder="little",
-                                        signed=False)
-            self.height = int.from_bytes(file_content[6:8],
-                                         byteorder="little",
-                                         signed=False)
-            self.x_offset = int.from_bytes(file_content[8:9],
-                                           byteorder="little",
-                                           signed=False)
-            self.y_offset = int.from_bytes(file_content[10:11],
-                                           byteorder="little",
-                                           signed=False)
-            file_type_int = int.from_bytes(file_content[12:13],
-                                           byteorder="little",
-                                           signed=False)
+            self.comment_length = int.from_bytes(
+                file_content[2:4], byteorder="little", signed=False
+            )
+            self.width = int.from_bytes(
+                file_content[4:6], byteorder="little", signed=False
+            )
+            self.height = int.from_bytes(
+                file_content[6:8], byteorder="little", signed=False
+            )
+            self.x_offset = int.from_bytes(
+                file_content[8:9], byteorder="little", signed=False
+            )
+            self.y_offset = int.from_bytes(
+                file_content[10:11], byteorder="little", signed=False
+            )
+            file_type_int = int.from_bytes(
+                file_content[12:13], byteorder="little", signed=False
+            )
             self.file_type = FileType(file_type_int)
 
             nnn = 64 + self.comment_length
@@ -132,9 +133,9 @@ class StreakImage:
 
         for wl in range(0, self.height):
             for time in range(0, self.width):
-                data[wl][time] = int.from_bytes(binary_data[from_:to],
-                                                byteorder="little",
-                                                signed=False)
+                data[wl][time] = int.from_bytes(
+                    binary_data[from_:to], byteorder="little", signed=False
+                )
                 from_ += byte_per_pixel
                 to += byte_per_pixel
         wl_axis, time_axis = self.get_axes(binary_data)
@@ -143,24 +144,29 @@ class StreakImage:
     def get_axes(self, binary_data: bytes) -> tuple:
         Axes = namedtuple("Axes", "wl time")
         offset = self.width * 4 + self.height * 4
-        wl_axis = np.asarray((struct.unpack_from("f" * (self.width),
-                                                 binary_data[-offset:])))
+        wl_axis = np.asarray(
+            (struct.unpack_from("f" * (self.width), binary_data[-offset:]))
+        )
         time_axis = np.asarray(
-            (struct.unpack_from("f" * (self.height),
-                                binary_data[(-offset + self.width * 4):])))
+            (
+                struct.unpack_from(
+                    "f" * (self.height), binary_data[(-offset + self.width * 4) :]
+                )
+            )
+        )
         return Axes(wl=wl_axis, time=time_axis)
 
     def parse_comment(self, comment: str) -> ParaList:
         """Parse the comment string and return it as a dictionary
 
-        The argument hast to be a 
+        The argument hast to be a
 
         args:
             comment: the comment string
 
         return:
-            The returned object is a dictionary of dictionaries. The first level is a dictionary of the comment categories. 
-            The second level dictionaries contain the key-value pairs of each category. 
+            The returned object is a dictionary of dictionaries. The first level is a dictionary of the comment categories.
+            The second level dictionaries contain the key-value pairs of each category.
 
         """
         # build 1st level dictionary
@@ -168,11 +174,11 @@ class StreakImage:
         # split comment string into category substrings
         category_rex = r"(\[[\w ]+?\],(?:.|\n)*?(?=\[|\Z))"
         comment_list = re.split(category_rex, comment)
-        comment_list = [item for item in comment_list if item != '']
+        comment_list = [item for item in comment_list if item != ""]
 
         # build 2nd level dictionaries
         for category in comment_list:
-            #remove linebreaks
+            # remove linebreaks
             category = category.replace("\r", " - ")
             category = category.replace("\n", " - ")
             # category name is written in brackets and is extracted first
@@ -193,10 +199,10 @@ class StreakImage:
             )
 
             category_dict_with_spaces = OrderedDict(
-                re.findall(key_val_pair_rex, category_body))
+                re.findall(key_val_pair_rex, category_body)
+            )
             category_dict = {
-                k.replace(" ", "").replace(".", ""): v.replace('"',
-                                                               "").strip(" -")
+                k.replace(" ", "").replace(".", ""): v.replace('"', "").strip(" -")
                 for k, v in category_dict_with_spaces.items()
             }
 
@@ -219,8 +225,7 @@ class StreakImage:
                         keys: str = ""
                         for key in comment_dict[category]:
                             value = comment_dict[category][key]
-                            print("|\t{:.<22s}:{: <28s}".format(key, value) +
-                                  "|")
+                            print("|\t{:.<22s}:{: <28s}".format(key, value) + "|")
                             keys = keys + key + " "
                 print("-" * 60 + "\n")
             print(comment_dict)
@@ -231,12 +236,14 @@ class StreakImage:
         """Compare file type and dimension of given classes"""
 
         if self.height != other.height:
-            raise IndexError("Height differs: {:s} vs {:s}".format(
-                self.height, other.height))
+            raise IndexError(
+                "Height differs: {:s} vs {:s}".format(self.height, other.height)
+            )
 
         if self.width != other.width:
-            raise IndexError("Width differs: {:s} vs {:s}".format(
-                self.width, other.width))
+            raise IndexError(
+                "Width differs: {:s} vs {:s}".format(self.width, other.width)
+            )
 
         if self.file_type != other.file_type:
             raise ValueError("File types do not match.")
@@ -263,8 +270,7 @@ class StreakImage:
 
     def apply_gain_correction(self):
         config = configparser.ConfigParser()
-        config.read(
-            os.path.dirname(__file__) + "/corrections/gain_correction.conf")
+        config.read(os.path.dirname(__file__) + "/corrections/gain_correction.conf")
         gain = self.parameters.StreakCamera.MCPGain
         cfak = float(config["GAIN-Correction"][gain])
         dat = self.data / cfak
@@ -280,8 +286,15 @@ class StreakImage:
     def apply_camera_correction(self):
         timerange: str = self.parameters.StreakCamera.TimeRange
         correction = np.load(
-            os.path.dirname(__file__) + "/corrections/ST" + timerange +
-            "_correction_" + str(self.width) + "x" + str(self.height) + ".npy")
+            os.path.dirname(__file__)
+            + "/corrections/ST"
+            + timerange
+            + "_correction_"
+            + str(self.width)
+            + "x"
+            + str(self.height)
+            + ".npy"
+        )
         self.data = self.data / correction
 
     def shift_0_to_max(self):
@@ -355,6 +368,18 @@ class StreakImage:
 
     def get_id(self) -> str:
         return os.path.basename(self.file_path)[:12]
+
+    def get_important_params(self, sep=",") -> str:
+        spec_keys = f"Grating{sep}Wavelength{sep}SlitWidth"
+        spect_values = f"{self.parameters.Spectrograph.Grating}{sep}{self.parameters.Spectrograph.Wavelength}{sep}{self.parameters.Spectrograph.SlitWidth}"
+
+        cam_keys = f"Gain{sep}TimeRange{sep}Mode"
+        cam_values = f"{self.parameters.StreakCamera.MCPGain}{sep}{self.parameters.StreakCamera.TimeRange}{sep}{self.parameters.StreakCamera.Mode}"
+
+        acq_keys = f"NrExposure{sep}ExposureTime"
+        acq_values = f"{self.parameters.Acquisition.NrExposure}{sep}{self.parameters.Acquisition.ExposureTime}"
+
+        return f"Spectograph\r{spec_keys}\r{spect_values}\rStreakCamera\r{cam_keys}\r{cam_values}\rAcquisition\r{acq_keys}\r{acq_values}"
 
         # def get_dimensions(self) -> tuple:
         # return (self.height, self.width)
