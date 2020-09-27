@@ -257,18 +257,14 @@ class StreakImage:
         else:
             raise TypeError("Background is not compatible to data.")
 
-    def apply_manual_offset(self, ranges: list):
-        raise (ValueError("remove multiple ranges, doesn't work anyway"))
-        offset = 0
-        for times in range(0, 3):
-            for range_ in ranges:
-                a = range_[0][0]
-                b = range_[0][1]
-                c = range_[1][0]
-                d = range_[1][1]
+    def apply_manual_offset(self, range: list):
+        a = range_[0][0]
+        b = range_[0][1]
+        c = range_[1][0]
+        d = range_[1][1]
 
-                offset = (self.data.iloc[c:d].loc[:, b:a]).mean().mean()
-            self.data -= offset
+        offset = (self.data.iloc[c:d].loc[:, b:a]).mean().mean()
+        self.data -= offset
 
     def apply_gain_correction(self):
         config = configparser.ConfigParser()
