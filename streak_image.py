@@ -257,7 +257,7 @@ class StreakImage:
         else:
             raise TypeError("Background is not compatible to data.")
 
-    def apply_manual_offset(self, range: list):
+    def apply_manual_offset(self, range_: list):
         a = range_[0][0]
         b = range_[0][1]
         c = range_[1][0]
