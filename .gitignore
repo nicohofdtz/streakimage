@@ -5,6 +5,7 @@ data.txt
 data.txt
 params.txt
 .DS_Store
+/.vscode/*
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
@@ -140,6 +141,7 @@ pythonenv*
 .mypy_cache/
 .dmypy.json
 dmypy.json
+.mypy.ini
 
 # Pyre type checker
 .pyre/
