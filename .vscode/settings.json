@@ -1,6 +1,0 @@
-{
-    "python.linting.pylintEnabled": false,
-    "python.linting.mypyEnabled": true,
-    "python.linting.enabled": true,
-    "python.pythonPath": "C:\\Users\\nicoh\\.virtualenvs\\pl_py-ga6hREax\\Scripts\\python.exe"
-}
