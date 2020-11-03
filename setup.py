@@ -8,4 +8,5 @@ setup(
     url="https://github.com/nicohofdtz/streakimage",
     packages=["streakimage"],
     package_data={"streakimage": ["correction_data/*"]},
+    py_modules=["streakimage/streak_image"],
 )
