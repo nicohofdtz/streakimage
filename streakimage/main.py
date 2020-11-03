@@ -16,6 +16,14 @@ import configparser
 # from hpdta8_params import build_parameters_tuple
 
 
+def main():
+    print("This module is not ment to be run directly.")
+
+
+if __name__ == "__main__":
+    exit(main())
+
+
 class FileType(Enum):
     """Enum for the file types used by HPD-TA
 

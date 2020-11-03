@@ -1,12 +1,12 @@
-from distutils.core import setup
+# from setuptools import find_packages
+from setuptools import setup
 
 setup(
     name="streakimage",
     version="1.1",
-    description="Python Class for ITEX-Files",
-    author="nicohfdtz",
-    url="https://github.com/nicohofdtz/streakimage",
+    description="Python Class for streak camera files.",
+    author="Nico Hofeditz",
+    author_email="nicohfdtz@gmail.com",
+    url="https//github.com/nicohfdtz/streakimage",
     packages=["streakimage"],
-    package_data={"streakimage": ["correction_data/*"]},
-    py_modules=["streakimage/streak_image"],
 )
