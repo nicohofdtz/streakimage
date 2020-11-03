@@ -1,8 +1,8 @@
 from distutils.core import setup
 
 setup(
-    name="StreakImage",
-    version="1.0",
+    name="streakimage",
+    version="1.1",
     description="Python Class for ITEX-Files",
     author="nicohfdtz",
     url="https://github.com/nicohofdtz/streakimage",
