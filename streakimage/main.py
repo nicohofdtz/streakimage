@@ -275,7 +275,7 @@ class StreakImage:
 
     def apply_gain_correction(self):
         config = configparser.ConfigParser()
-        config.read(os.path.dirname(__file__) + "/corrections/gain_correction.conf")
+        config.read(os.path.dirname(__file__) + "/correction_data/gain_correction.conf")
         gain = self.parameters.StreakCamera.MCPGain
         cfak = float(config["GAIN-Correction"][gain])
         dat = self.data / cfak
@@ -292,7 +292,7 @@ class StreakImage:
         timerange: str = self.parameters.StreakCamera.TimeRange
         correction = np.load(
             os.path.dirname(__file__)
-            + "/corrections/ST"
+            + "/correction_data/ST"
             + timerange
             + "_correction_"
             + str(self.width)
