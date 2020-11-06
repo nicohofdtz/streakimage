@@ -138,16 +138,15 @@ class StreakImage:
         byte_per_pixel = 2 if self.file_type == FileType.BIT16 else 4
         from_ = 0
         to = byte_per_pixel
-
-        for wl in range(0, self.height):
-            for time in range(0, self.width):
-                data[wl][time] = int.from_bytes(
+        for time in range(0, self.height):
+            for wl in range(0, self.width):
+                data[time][wl] = int.from_bytes(
                     binary_data[from_:to], byteorder="little", signed=False
                 )
                 from_ += byte_per_pixel
                 to += byte_per_pixel
         wl_axis, time_axis = self.get_axes(binary_data)
-        return pd.DataFrame(data=data, index=time_axis, columns=wl_axis)
+        return pd.DataFrame(data=data[::, ::-1], index=time_axis, columns=wl_axis[::-1])
 
     def get_axes(self, binary_data: bytes) -> tuple:
         Axes = namedtuple("Axes", "wl time")
