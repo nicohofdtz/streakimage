@@ -53,6 +53,10 @@ class StreakImage:
         bg=None,
         bg_dict=None,
     ):
+
+        self.config = configparser.ConfigParser()
+        self.config.read(os.path.dirname(__file__) + "/streakimage.ini")
+
         # the hptda fields
         self.file_path = file_path
         self.comment_length: int
@@ -274,25 +278,34 @@ class StreakImage:
         self.data -= offset
 
     def apply_gain_correction(self):
-        config = configparser.ConfigParser()
-        config.read(os.path.dirname(__file__) + "/correction_data/gain_correction.conf")
         gain = self.parameters.StreakCamera.MCPGain
-        cfak = float(config["GAIN-Correction"][gain])
-        dat = self.data / cfak
+        gcoef = float(self.config["Gain-Correction"][gain])
+        dat = self.data / gcoef
         self.data = dat
 
-    def apply_int_correction(self):
+    def apply_exp_correction(self):
         exp_time = int(self.parameters.Acquisition.ExposureTime.strip(" ms"))
         nr_exp = int(self.parameters.Acquisition.NrExposure)
         cfak = exp_time * nr_exp
         dat = self.data / cfak
         self.data = dat
 
+    def get_cam_corr_prefix(self) -> str:
+        """Returns the prefix for the cam correction file"""
+        date = self.get_date()
+        for key in self.config["Cam-Correction-Prefix"]:
+            if key != "default":
+                start, end = key.split("-")
+                if start < date and date < end:
+                    return self.config["Cam-Correction-Prefix"][key]
+        return self.config["Cam-Correction-Prefix"]["default"]
+
     def apply_camera_correction(self):
         timerange: str = self.parameters.StreakCamera.TimeRange
+        prefix = self.get_cam_corr_prefix()
         correction = np.load(
             os.path.dirname(__file__)
-            + "/correction_data/ST"
+            + f"/correction_data/{prefix}_ST"
             + timerange
             + "_correction_"
             + str(self.width)
@@ -324,13 +337,13 @@ class StreakImage:
         # ToDo: Implement or purge
         pass
 
-    def get_date(self) -> datetime:
+    def get_date(self) -> str:
         date_re = re.match(
-            r"\"(?P<month>[0-9]{2})\-(?P<day>[0-9]{2})\-(?P<year>[0-9]{4})\"",
+            r"(?P<month>[0-9]{2})\-(?P<day>[0-9]{2})\-(?P<year>[0-9]{4})",
             self.parameters.Application.Date,
         )
         time_re = re.match(
-            r'"(?P<hour>[0-9]{2})\:(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})"',
+            r"(?P<hour>[0-9]{2})\:(?P<minute>[0-9]{2}):(?P<second>[0-9]{2})",
             self.parameters.Application.Time,
         )
         if date_re and time_re:
@@ -348,7 +361,7 @@ class StreakImage:
             int(time["second"]),
         )
 
-        return datetime_
+        return datetime_.date().isoformat().replace("-", "")
 
     def get_json(self) -> str:
         streak_dict: dict = {
