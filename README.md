@@ -15,3 +15,5 @@ Output:
 ```
 1001 ms
 ```
+
+This project is not yet licenced but licencing it under the terms of the GNU or MIT licence is planned. 
