@@ -6,7 +6,6 @@ data.txt
 params.txt
 .DS_Store
 /.vscode/*
-Pipfile
 Pipfile.lock
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
