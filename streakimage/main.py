@@ -51,7 +51,8 @@ class StreakImage:
         verbose: bool = False,
         correction: bool = False,
         bg=None,
-        bg_dict=None,
+        bg_dict: dict = None,
+        title: str = None,
     ):
 
         self.config = configparser.ConfigParser()
@@ -69,11 +70,12 @@ class StreakImage:
         self.comment_string: str
         self.parameters: ParaList
         # the custom fields
-        self.verbose: bool = verbose
-        self.correction: bool = correction
+        self.verbose = verbose
+        self.correction = correction
         self.bg: StreakImage = bg
-        self.bg_dict: dict = bg_dict
+        self.bg_dict = bg_dict
         self.bg_sub_corr: bool
+        self.title = title
         self.transient: pd.Series = None
 
         self.parse_file(file_path)
@@ -84,11 +86,7 @@ class StreakImage:
             print("file-type:", self.file_type.name)
             # print("comment:", self.comment_string)
         if self.bg_dict and not self.bg:
-            bg_str = f"ST{self.parameters.StreakCamera.TimeRange}_"
-            bg_str += f"g{self.parameters.StreakCamera.MCPGain}_"
-            bg_str += f"{self.parameters.Acquisition.NrExposure}x"
-            bg_str += self.parameters.Acquisition.ExposureTime.replace(" ", "")
-            self.bg = self.bg_dict[f"{bg_str}"]
+            self.bg = self.bg_dict[self.get_bg_id()]
         if self.bg:
             self.apply_bg_subtraction()
         if self.correction:
@@ -169,8 +167,6 @@ class StreakImage:
 
     def parse_comment(self, comment: str) -> ParaList:
         """Parse the comment string and return it as a dictionary
-
-        The argument hast to be a
 
         args:
             comment: the comment string
@@ -296,7 +292,7 @@ class StreakImage:
         for key in self.config["Cam-Correction-Prefix"]:
             if key != "default":
                 start, end = key.split("-")
-                if start < date and date < end:
+                if start <= date and date <= end:
                     return self.config["Cam-Correction-Prefix"][key]
         return self.config["Cam-Correction-Prefix"]["default"]
 
@@ -326,16 +322,6 @@ class StreakImage:
 
     def shift_time_scale(self, shift_value):
         self.data.index += shift_value
-
-    def exportSDF(self, path):
-        """Export the data to the SDF file format.
-
-        The data is exported to a SDF file at the given path.
-        The generated file is compatible to the labview program "PL_Analyze".
-
-        """
-        # ToDo: Implement or purge
-        pass
 
     def get_date(self) -> str:
         date_re = re.match(
@@ -399,5 +385,14 @@ class StreakImage:
 
         return f"Spectograph\r{spec_keys}\r{spect_values}\rStreakCamera\r{cam_keys}\r{cam_values}\rAcquisition\r{acq_keys}\r{acq_values}"
 
-        # def get_dimensions(self) -> tuple:
-        # return (self.height, self.width)
+    def export_wexf(self, path: str):
+        """Export img to the wavelength explicit format readable by Glotaran
+
+        See https://github.com/nicohofdtz/glotaran.github.io/blob/patch-1/legacy/file_formats.md for more information
+        """
+        with open(
+            path,
+            "w+",
+        ) as file:
+            file.write(f"\n\nWavelength explicit\nIntervalnr {self.width}\n")
+            self.data.to_csv(file, sep=" ")
