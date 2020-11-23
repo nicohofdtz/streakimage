@@ -29,3 +29,6 @@ The key to a prefix is the date range (from-to in YYYYMMDD notation) for which i
 StreakImage finds the correct prefix by going through the list from top to bottom and checking if *from* <= *date* <= *to*, where *date* is the date of the streak image.
 If no prefix fits the condition the default prefix is used.
 Since it's the end date of the validity of a set of correction files is unclear when they're added, the end date of the newest prefix can be set to a date in far future.
+
+### Licence
+This project is not yet licenced but licencing it under the terms of the GNU or MIT licence is planned. 
