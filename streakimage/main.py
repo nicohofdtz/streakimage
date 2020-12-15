@@ -5,13 +5,14 @@ import numpy as np
 import pandas as pd
 import argparse
 import json
-from json_tricks import dumps as jt_dumps
 from collections import OrderedDict, namedtuple
 from .hpdta8_params import ParaList, build_parameters_tuple
 import struct
 import os
 from typing import Optional
 import configparser
+from scipy import interpolate
+import warnings
 
 # from hpdta8_params import build_parameters_tuple
 
@@ -311,6 +312,16 @@ class StreakImage:
         )
         self.data = self.data / correction
 
+    def apply_mono_correction(self, extrapolate=False):
+        disp = pd.read_csv(os.path.dirname(__file__)+"/correction_data/mono.dat", delimiter="\t", index_col=0, names=[""], squeeze=True, )
+        wls = self.data.columns.values
+        if (wls[0]<disp.index.values[0] or wls[-1]>disp.index.values[-1]) and not extrapolate:
+            raise IndexError("Data bounds exceed the measured mono correction. To use interpolation explicitly set extrapolate=True")
+        else:
+            interpolate_disp = interpolate.interp1d(disp.index.values, disp.values, fill_value="extrapolate")
+            corr = interpolate_disp(wls)
+            self.data/=corr
+
     def shift_0_to_max(self):
         max = self.time_of_max()
         t_max = self.data[max].idxmax()
@@ -348,20 +359,6 @@ class StreakImage:
         )
 
         return datetime_.date().isoformat().replace("-", "")
-
-    def get_json(self) -> str:
-        streak_dict: dict = {
-            "date": self.get_date(),
-            "width": self.width,
-            "height": self.height,
-            "x_offset": self.x_offset,
-            "y_offset": self.y_offset,
-            "file_type": self.file_type,
-            "parameters": self.parameters,
-            "data": self.data,
-        }
-        json_dump = jt_dumps(streak_dict, indent=4)
-        return json_dump
 
     def get_bg_id(self) -> str:
         id = f"bg_ST{self.parameters.StreakCamera.TimeRange}_"
