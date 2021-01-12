@@ -277,15 +277,13 @@ class StreakImage:
     def apply_gain_correction(self):
         gain = self.parameters.StreakCamera.MCPGain
         gcoef = float(self.config["Gain-Correction"][gain])
-        dat = self.data / gcoef
-        self.data = dat
+        self.data /= gcoef
 
     def apply_exp_correction(self):
         exp_time = int(self.parameters.Acquisition.ExposureTime.strip(" ms"))
         nr_exp = int(self.parameters.Acquisition.NrExposure)
         cfak = exp_time * nr_exp
-        dat = self.data / cfak
-        self.data = dat
+        self.data /= cfak
 
     def get_cam_corr_prefix(self) -> str:
         """Returns the prefix for the cam correction file"""
@@ -313,14 +311,26 @@ class StreakImage:
         self.data = self.data / correction
 
     def apply_mono_correction(self, extrapolate=False):
-        disp = pd.read_csv(os.path.dirname(__file__)+"/correction_data/mono.dat", delimiter="\t", index_col=0, names=[""], squeeze=True, )
+        disp = pd.read_csv(
+            os.path.dirname(__file__) + "/correction_data/mono.dat",
+            delimiter="\t",
+            index_col=0,
+            names=[""],
+            squeeze=True,
+        )
         wls = self.data.columns.values
-        if (wls[0]<disp.index.values[0] or wls[-1]>disp.index.values[-1]) and not extrapolate:
-            raise IndexError("Data bounds exceed the measured mono correction. To use interpolation explicitly set extrapolate=True")
+        if (
+            wls[0] < disp.index.values[0] or wls[-1] > disp.index.values[-1]
+        ) and not extrapolate:
+            raise IndexError(
+                "Data bounds exceed the measured mono correction. To use interpolation explicitly set extrapolate=True"
+            )
         else:
-            interpolate_disp = interpolate.interp1d(disp.index.values, disp.values, fill_value="extrapolate")
+            interpolate_disp = interpolate.interp1d(
+                disp.index.values, disp.values, fill_value="extrapolate"
+            )
             corr = interpolate_disp(wls)
-            self.data/=corr
+            self.data /= corr
 
     def shift_0_to_max(self):
         max = self.time_of_max()
