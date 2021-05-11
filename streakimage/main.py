@@ -6,7 +6,7 @@ import pandas as pd
 import argparse
 import json
 from collections import OrderedDict, namedtuple
-from .hpdta8_params import ParaList, build_parameters_tuple
+from .hpdta8_params_ir import ParaList, build_parameters_tuple
 import struct
 import os
 from typing import Optional
