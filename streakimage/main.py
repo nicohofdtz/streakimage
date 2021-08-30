@@ -280,7 +280,9 @@ class StreakImage:
         self.data /= gcoef
 
     def apply_exp_correction(self):
-        exp_time = int(self.parameters.Acquisition.ExposureTime.strip(" ms"))
+        suffix_dic = {"ms": 1, "u": 0.001}
+        time_and_unit = int(self.parameters.Acquisition.ExposureTime.split[" "])
+        exp_time = time_and_unit[0]*suffix_dic[time_and_unit[1]]
         nr_exp = int(self.parameters.Acquisition.NrExposure)
         cfak = exp_time * nr_exp
         self.data /= cfak
