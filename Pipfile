@@ -11,6 +11,7 @@ black = "*"
 numpy = "1.19.3"
 pandas = "*"
 json-tricks = "*"
+scipy = "*"
 
 [requires]
 python_version = "3.8"

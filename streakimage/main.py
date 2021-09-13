@@ -278,6 +278,14 @@ class StreakImage:
         gain = self.parameters.StreakCamera.MCPGain
         gcoef = float(self.config["Gain-Correction"][gain])
         self.data /= gcoef
+        
+    def apply_cornerbg(self, ci1=10, ci2=-10, t_max=10):
+        corner_1 = self.data.iloc[:t_max, :ci1]
+        corner_2 = self.data.iloc[:t_max, ci2:]
+        o1 = corner_1.mean().mean()
+        o2 = corner_2.mean().mean()
+        offset = (o1 + o2) / 2
+        self.data -= offset
 
     def apply_exp_correction(self):
         suffix_dic = {"ms": 1, "u": 0.001}
