@@ -281,8 +281,8 @@ class StreakImage:
 
     def apply_exp_correction(self):
         suffix_dic = {"ms": 1, "u": 0.001}
-        time_and_unit = int(self.parameters.Acquisition.ExposureTime.split[" "])
-        exp_time = time_and_unit[0]*suffix_dic[time_and_unit[1]]
+        time_and_unit = self.parameters.Acquisition.ExposureTime.split(" ")
+        exp_time = int(time_and_unit[0])*suffix_dic[time_and_unit[1]]
         nr_exp = int(self.parameters.Acquisition.NrExposure)
         cfak = exp_time * nr_exp
         self.data /= cfak
