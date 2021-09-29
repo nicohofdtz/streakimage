@@ -1,4 +1,5 @@
 from collections import namedtuple
+from types import SimpleNamespace
 
 ParaList = namedtuple(
     "ParaList",
@@ -133,43 +134,49 @@ Scaling = namedtuple(
 Comment = namedtuple("Comment", "UserComment")
 
 
-def build_parameters_tuple(para_dict: dict) -> ParaList:
-    """ Builds the category tuples from the category dicts
+# def build_parameters_tuple(para_dict: dict) -> ParaList:
+#     """ Builds the category tuples from the category dicts
     
-    args:
-        para_dict: the comment dictionary
+#     args:
+#         para_dict: the comment dictionary
 
-    return:
-        The returned object ist a namedtuple of all parameters.
+#     return:
+#         The returned object ist a namedtuple of all parameters.
 
-    """
-    app_tuple = Application(**para_dict["Application"])
-    cam_tuple = Camera(**para_dict["Camera"])
-    acq_tuple = Acquisition(**para_dict["Acquisition"])
-    grabber_tuple = Grabber(**para_dict["Grabber"])
-    display_tuple = DisplayLUT(**para_dict["DisplayLUT"])
-    extdevices_tuple = ExternalDevices(**para_dict["ExternalDevices"])
-    streak_tuple = Streakcamera(**para_dict["Streakcamera"])
-    spec_tuple = Spectrograph(**para_dict["Spectrograph"])
-    delaybox_tuple = Delaybox(**para_dict["Delaybox"])
-    delay2box_tuple = Delay2box(**para_dict["Delay2box"])
-    scaling_tuple = Scaling(**para_dict["Scaling"])
-    comment_tuple = Comment(**para_dict["Comment"])
+#     """
+#     app_tuple = Application(**para_dict["Application"])
+#     cam_tuple = Camera(**para_dict["Camera"])
+#     acq_tuple = Acquisition(**para_dict["Acquisition"])
+#     grabber_tuple = Grabber(**para_dict["Grabber"])
+#     display_tuple = DisplayLUT(**para_dict["DisplayLUT"])
+#     extdevices_tuple = ExternalDevices(**para_dict["ExternalDevices"])
+#     streak_tuple = Streakcamera(**para_dict["Streakcamera"])
+#     spec_tuple = Spectrograph(**para_dict["Spectrograph"])
+#     delaybox_tuple = Delaybox(**para_dict["Delaybox"])
+#     delay2box_tuple = Delay2box(**para_dict["Delay2box"])
+#     scaling_tuple = Scaling(**para_dict["Scaling"])
+#     comment_tuple = Comment(**para_dict["Comment"])
 
-    # build the parameters tuple from the category tuples
-    para_tuple = ParaList(
-        app_tuple,
-        cam_tuple,
-        acq_tuple,
-        grabber_tuple,
-        display_tuple,
-        extdevices_tuple,
-        streak_tuple,
-        spec_tuple,
-        delaybox_tuple,
-        delay2box_tuple,
-        scaling_tuple,
-        comment_tuple,
-    )
+#     # build the parameters tuple from the category tuples
+#     para_tuple = ParaList(
+#         app_tuple,
+#         cam_tuple,
+#         acq_tuple,
+#         grabber_tuple,
+#         display_tuple,
+#         extdevices_tuple,
+#         streak_tuple,
+#         spec_tuple,
+#         delaybox_tuple,
+#         delay2box_tuple,
+#         scaling_tuple,
+#         comment_tuple,
+#     )
 
-    return para_tuple
+#     return para_tuple
+    
+def build_parameters_tuple(para_dict: dict) -> SimpleNamespace:
+    return get_namespace(para_dict)
+
+def get_namespace(dict_: dict) -> SimpleNamespace:
+    return SimpleNamespace(**{k:(v if not isinstance(v, dict) else get_namespace(v)) for k,v in dict_.items()})

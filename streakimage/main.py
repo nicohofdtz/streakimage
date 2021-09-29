@@ -1,6 +1,7 @@
 from datetime import datetime, date
 from enum import Enum
 import re
+from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 import argparse
@@ -18,7 +19,7 @@ import warnings
 
 
 def main():
-    print("This module is not ment to be run directly.")
+    print("This module is not intended to run directly.")
 
 
 if __name__ == "__main__":
@@ -28,7 +29,7 @@ if __name__ == "__main__":
 class FileType(Enum):
     """Enum for the file types used by HPD-TA
 
-    can be 8-bit, 16-bit or compressed
+    can be 8 bit, 16 bit, 32 bit or compressed
     """
 
     BIT8 = 0
@@ -38,7 +39,7 @@ class FileType(Enum):
 
 
 class StreakImage:
-    """Parses and holds the data of an recorded image
+    """Parses and holds the data of a recorded image
 
     args:
         file_path: path to the file to be parsed
@@ -69,7 +70,7 @@ class StreakImage:
         self.file_type: FileType
         self.data: pd.DataFrame
         self.comment_string: str
-        self.parameters: ParaList
+        self.parameters: SimpleNamespace
         # the custom fields
         self.verbose = verbose
         self.correction = correction
@@ -166,7 +167,7 @@ class StreakImage:
         )
         return Axes(wl=wl_axis, time=time_axis)
 
-    def parse_comment(self, comment: str) -> ParaList:
+    def parse_comment(self, comment: str) -> SimpleNamespace:
         """Parse the comment string and return it as a dictionary
 
         args:
