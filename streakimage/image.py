@@ -7,23 +7,13 @@ import pandas as pd
 import argparse
 import json
 from collections import OrderedDict, namedtuple
-from .hpdta8_params import ParaList, build_parameters_tuple
+from .hpdta8_params import ParaList, build_parameters_tuple, get_namespace
 import struct
 import os
-from typing import Optional
+from typing import Optional, Union
 import configparser
 from scipy import interpolate
 import warnings
-
-# from hpdta8_params import build_parameters_tuple
-
-
-def main():
-    print("This module is not intended to run directly.")
-
-
-if __name__ == "__main__":
-    exit(main())
 
 
 class FileType(Enum):
@@ -71,6 +61,7 @@ class StreakImage:
         self.data: pd.DataFrame
         self.comment_string: str
         self.parameters: SimpleNamespace
+
         # the custom fields
         self.verbose = verbose
         self.correction = correction
@@ -167,6 +158,14 @@ class StreakImage:
         )
         return Axes(wl=wl_axis, time=time_axis)
 
+    def get_namespace(self, dict_: dict) -> SimpleNamespace:
+        return SimpleNamespace(
+            **{
+                k: (v if not isinstance(v, dict) else self.get_namespace(v))
+                for k, v in dict_.items()
+            }
+        )
+
     def parse_comment(self, comment: str) -> SimpleNamespace:
         """Parse the comment string and return it as a dictionary
 
@@ -238,7 +237,7 @@ class StreakImage:
                             keys = keys + key + " "
                 print("-" * 60 + "\n")
             print(comment_dict)
-        param_list = build_parameters_tuple(comment_dict)
+        param_list = get_namespace(comment_dict)
         return param_list
 
     def is_compatible(self, other: "StreakImage") -> bool:
@@ -279,7 +278,7 @@ class StreakImage:
         gain = self.parameters.StreakCamera.MCPGain
         gcoef = float(self.config["Gain-Correction"][gain])
         self.data /= gcoef
-        
+
     def apply_cornerbg(self, ci1=10, ci2=-10, t_max=10):
         corner_1 = self.data.iloc[:t_max, :ci1]
         corner_2 = self.data.iloc[:t_max, ci2:]
@@ -291,7 +290,7 @@ class StreakImage:
     def apply_exp_correction(self):
         suffix_dic = {"ms": 1, "u": 0.001}
         time_and_unit = self.parameters.Acquisition.ExposureTime.split(" ")
-        exp_time = int(time_and_unit[0])*suffix_dic[time_and_unit[1]]
+        exp_time = int(time_and_unit[0]) * suffix_dic[time_and_unit[1]]
         nr_exp = int(self.parameters.Acquisition.NrExposure)
         cfak = exp_time * nr_exp
         self.data /= cfak
@@ -309,9 +308,11 @@ class StreakImage:
     def apply_camera_correction(self):
         timerange: str = self.parameters.StreakCamera.TimeRange
         prefix = self.get_cam_corr_prefix()
+        camera_name = self.parameters.Camera.CameraName
+        cam_corrections_folder = self.config["Cam-Corrections"][camera_name]
         correction = np.load(
             os.path.dirname(__file__)
-            + f"/correction_data/{prefix}_ST"
+            + f"{cam_corrections_folder}/{camera_name}{prefix}_ST"
             + timerange
             + "_correction_"
             + str(self.width)
