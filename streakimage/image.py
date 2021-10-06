@@ -4,16 +4,12 @@ import re
 from types import SimpleNamespace
 import numpy as np
 import pandas as pd
-import argparse
-import json
 from collections import OrderedDict, namedtuple
-from .hpdta8_params import ParaList, build_parameters_tuple, get_namespace
+
 import struct
 import os
-from typing import Optional, Union
 import configparser
 from scipy import interpolate
-import warnings
 
 
 class FileType(Enum):
@@ -26,6 +22,13 @@ class FileType(Enum):
     COMPRESSED = 1  # not used by HPD-TA
     BIT16 = 2
     BIT32 = 3
+
+
+class CameraModel(Enum):
+    """Enum for the camera types."""
+
+    C4742_95 = "uvvis"
+    C4742_95_12ER = "ir"
 
 
 class StreakImage:
@@ -237,7 +240,7 @@ class StreakImage:
                             keys = keys + key + " "
                 print("-" * 60 + "\n")
             print(comment_dict)
-        param_list = get_namespace(comment_dict)
+        param_list = self.get_namespace(comment_dict)
         return param_list
 
     def is_compatible(self, other: "StreakImage") -> bool:
@@ -275,7 +278,7 @@ class StreakImage:
         self.data -= offset
 
     def apply_gain_correction(self):
-        gain = self.parameters.StreakCamera.MCPGain
+        gain = self.parameters.Streakcamera.MCPGain
         gcoef = float(self.config["Gain-Correction"][gain])
         self.data /= gcoef
 
@@ -306,25 +309,31 @@ class StreakImage:
         return self.config["Cam-Correction-Prefix"]["default"]
 
     def apply_camera_correction(self):
-        timerange: str = self.parameters.StreakCamera.TimeRange
+        timerange: str = self.parameters.Streakcamera.TimeRange
         prefix = self.get_cam_corr_prefix()
         camera_name = self.parameters.Camera.CameraName
-        cam_corrections_folder = self.config["Cam-Corrections"][camera_name]
+        cam_corrections_folder = self.config["Cam-Corrections-Folders"][camera_name]
         correction = np.load(
-            os.path.dirname(__file__)
-            + f"{cam_corrections_folder}/{camera_name}{prefix}_ST"
-            + timerange
-            + "_correction_"
-            + str(self.width)
-            + "x"
-            + str(self.height)
-            + ".npy"
+            os.path.join(
+                os.path.dirname(__file__),
+                f"{cam_corrections_folder}/{camera_name}{prefix}_ST",
+                timerange,
+                "_correction_",
+                str(self.width),
+                "x",
+                str(self.height),
+                ".npy",
+            )
         )
         self.data = self.data / correction
 
     def apply_mono_correction(self, extrapolate=False):
+        camera_name = self.parameters.Camera.CameraName
         disp = pd.read_csv(
-            os.path.dirname(__file__) + "/correction_data/mono.dat",
+            os.path.join(
+                os.path.dirname(__file__),
+                f"correction_data/{camera_name}_corrections/{camera_name}_mono.dat",
+            ),
             delimiter="\t",
             index_col=0,
             names=[""],
@@ -383,8 +392,8 @@ class StreakImage:
         return datetime_.date().isoformat().replace("-", "")
 
     def get_bg_id(self) -> str:
-        id = f"bg_ST{self.parameters.StreakCamera.TimeRange}_"
-        id += f"g{self.parameters.StreakCamera.MCPGain}_"
+        id = f"bg_ST{self.parameters.Streakcamera.TimeRange}_"
+        id += f"g{self.parameters.Streakcamera.MCPGain}_"
         id += f"{self.parameters.Acquisition.NrExposure}x"
         id += f"{self.parameters.Acquisition.ExposureTime.replace(' ','')}"
         return id
@@ -397,12 +406,12 @@ class StreakImage:
         spect_values = f"{self.parameters.Spectrograph.Grating}{sep}{self.parameters.Spectrograph.Wavelength}{sep}{self.parameters.Spectrograph.SlitWidth}"
 
         cam_keys = f"Gain{sep}TimeRange{sep}Mode"
-        cam_values = f"{self.parameters.StreakCamera.MCPGain}{sep}{self.parameters.StreakCamera.TimeRange}{sep}{self.parameters.StreakCamera.Mode}"
+        cam_values = f"{self.parameters.Streakcamera.MCPGain}{sep}{self.parameters.Streakcamera.TimeRange}{sep}{self.parameters.Streakcamera.Mode}"
 
         acq_keys = f"NrExposure{sep}ExposureTime"
         acq_values = f"{self.parameters.Acquisition.NrExposure}{sep}{self.parameters.Acquisition.ExposureTime}"
 
-        return f"Spectograph\r{spec_keys}\r{spect_values}\rStreakCamera\r{cam_keys}\r{cam_values}\rAcquisition\r{acq_keys}\r{acq_values}"
+        return f"Spectograph\r{spec_keys}\r{spect_values}\rStreakcamera\r{cam_keys}\r{cam_values}\rAcquisition\r{acq_keys}\r{acq_values}"
 
     def export_wexf(self, path: str):
         """Export img to the wavelength explicit format readable by Glotaran

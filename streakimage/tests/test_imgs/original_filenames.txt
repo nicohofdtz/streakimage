@@ -1,0 +1,2 @@
+uv_vis_file = 190703 01 TRPL Z1 20x10s
+ir_file = 20200826 101 DN216_MgZnO_200804 00a P1 000mV
