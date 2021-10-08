@@ -9,7 +9,8 @@ from collections import OrderedDict, namedtuple
 import struct
 import os
 import configparser
-from scipy import interpolate
+
+# from scipy import interpolate
 
 
 class FileType(Enum):
@@ -299,14 +300,15 @@ class StreakImage:
         self.data /= cfak
 
     def get_cam_corr_prefix(self) -> str:
+        camera_name = self.parameters.Camera.CameraName
         """Returns the prefix for the cam correction file"""
         date = self.get_date()
-        for key in self.config["Cam-Correction-Prefix"]:
+        for key in self.config[f"Cam-Correction-Prefix-{camera_name}"]:
             if key != "default":
                 start, end = key.split("-")
                 if start <= date and date <= end:
-                    return self.config["Cam-Correction-Prefix"][key]
-        return self.config["Cam-Correction-Prefix"]["default"]
+                    return self.config[f"Cam-Correction-Prefix-{camera_name}"][key]
+        return self.config[f"Cam-Correction-Prefix-{camera_name}"]["default"]
 
     def apply_camera_correction(self):
         timerange: str = self.parameters.Streakcamera.TimeRange
