@@ -54,7 +54,7 @@ class StreakImage:
     ):
 
         self.config = configparser.ConfigParser()
-        self.parent_dir=Path(os.path.dirname(__file__))
+        self.parent_dir = Path(os.path.dirname(__file__))
         self.config.read(self.parent_dir / "streakimage.ini")
 
         # the hptda fields
@@ -91,7 +91,8 @@ class StreakImage:
             self.apply_bg_subtraction()
         if self.correction:
             self.apply_camera_correction()
-        self.shift_0_to_max()
+        if self.parameters.Streakcamera.Mode == "Operate":
+            self.shift_0_to_max()
 
     def parse_file(self, file_path: str):
         """Read the given file and parse the content to class fields.
@@ -124,9 +125,9 @@ class StreakImage:
             self.file_type = FileType(file_type_int)
 
             nnn = 64 + self.comment_length
-            self.data = self.parse_data(file_content[nnn:])
             self.comment_string = file_content[64:nnn].decode("utf-8")
             self.parameters = self.parse_comment(self.comment_string)
+            self.data = self.parse_data(file_content[nnn:])
             self.bg_sub_corr = self.parameters.Acquisition.BacksubCorr == "1"
 
     def parse_data(self, binary_data: bytes) -> pd.DataFrame:
@@ -152,17 +153,24 @@ class StreakImage:
 
     def get_axes(self, binary_data: bytes) -> tuple:
         Axes = namedtuple("Axes", "wl time")
-        offset = self.width * 4 + self.height * 4
-        wl_axis = np.asarray(
-            (struct.unpack_from("f" * (self.width), binary_data[-offset:]))
-        )
-        time_axis = np.asarray(
-            (
-                struct.unpack_from(
-                    "f" * (self.height), binary_data[(-offset + self.width * 4) :]
+        if self.parameters.Streakcamera.Mode == "Focus":
+            offset = self.width * 4
+            wl_axis = np.asarray(
+                (struct.unpack_from("f" * (self.width), binary_data[-offset:]))
+            )
+            time_axis = np.arange(-self.height/2+1, self.height/2+1, 1)
+        elif self.parameters.Streakcamera.Mode == "Operate":
+            offset = self.width * 4 + self.height * 4
+            wl_axis = np.asarray(
+                (struct.unpack_from("f" * (self.width), binary_data[-offset:]))
+            )
+            time_axis = np.asarray(
+                (
+                    struct.unpack_from(
+                        "f" * (self.height), binary_data[(-offset + self.width * 4) :]
+                    )
                 )
             )
-        )
         return Axes(wl=wl_axis, time=time_axis)
 
     def get_namespace(self, dict_: dict) -> SimpleNamespace:
