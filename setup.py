@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="streakimage",
-    version="2.3.2",
+    version="2.3.3",
     description="Python Class for streak camera files.",
     author="Nico Hofeditz",
     author_email="nicohfdtz@gmail.com",
