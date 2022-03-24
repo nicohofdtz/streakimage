@@ -5,10 +5,12 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 from collections import OrderedDict, namedtuple
+from pathlib import Path
 
 import struct
 import os
 import configparser
+from scipy import interpolate
 
 # from scipy import interpolate
 
@@ -52,7 +54,8 @@ class StreakImage:
     ):
 
         self.config = configparser.ConfigParser()
-        self.config.read(os.path.dirname(__file__) + "/streakimage.ini")
+        self.parent_dir=Path(os.path.dirname(__file__))
+        self.config.read(self.parent_dir / "streakimage.ini")
 
         # the hptda fields
         self.file_path = file_path
@@ -312,20 +315,13 @@ class StreakImage:
 
     def apply_camera_correction(self):
         timerange: str = self.parameters.Streakcamera.TimeRange
-        prefix = self.get_cam_corr_prefix()
+        prefix = f"_{self.get_cam_corr_prefix()}"
         camera_name = self.parameters.Camera.CameraName
         cam_corrections_folder = self.config["Cam-Corrections-Folders"][camera_name]
+        cam_corrections_filename = f"{camera_name}{prefix}_ST{timerange}_correction_{str(self.width)}x{str(self.height)}.npy"
+
         correction = np.load(
-            os.path.join(
-                os.path.dirname(__file__),
-                f"{cam_corrections_folder}/{camera_name}{prefix}_ST",
-                timerange,
-                "_correction_",
-                str(self.width),
-                "x",
-                str(self.height),
-                ".npy",
-            )
+            f"{os.path.dirname(__file__)}/{cam_corrections_folder}/{cam_corrections_filename}"
         )
         self.data = self.data / correction
 
@@ -356,13 +352,11 @@ class StreakImage:
             self.data /= corr
 
     def shift_0_to_max(self):
-        max = self.time_of_max()
-        t_max = self.data[max].idxmax()
-        self.data.index -= t_max
+        self.data.index -= self.index_of_max()
 
-    def time_of_max(self):
-        spec = np.sum(self.data, axis=0)
-        return spec.idxmax()
+    def index_of_max(self):
+        trans = np.sum(self.data, axis=1)
+        return trans.idxmax()
 
     def shift_time_scale(self, shift_value):
         self.data.index += shift_value
