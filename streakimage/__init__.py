@@ -1,1 +1,1 @@
-from .main import StreakImage, FileType
+from .image import StreakImage, FileType
