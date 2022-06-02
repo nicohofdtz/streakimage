@@ -17,6 +17,17 @@ Output:
 1001 ms
 ```
 
+## Installation
+The package can be installed via with
+'''
+pip install git+https://github.com/nicohofdtz/streakimage#egg=streakimage
+'''
+and updated with
+'''
+pip install git+https://github.com/nicohofdtz/streakimage#egg=streakimage --upgrade
+'''
+
+
 ### Adding new correction files
 
 Over time the included correction files might not work as good anymore.
