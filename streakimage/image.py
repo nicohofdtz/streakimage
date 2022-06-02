@@ -158,7 +158,7 @@ class StreakImage:
             wl_axis = np.asarray(
                 (struct.unpack_from("f" * (self.width), binary_data[-offset:]))
             )
-            time_axis = np.arange(-self.height/2+1, self.height/2+1, 1)
+            time_axis = np.arange(-self.height / 2 + 1, self.height / 2 + 1, 1)
         elif self.parameters.Streakcamera.Mode == "Operate":
             offset = self.width * 4 + self.height * 4
             wl_axis = np.asarray(
@@ -289,9 +289,18 @@ class StreakImage:
         offset = (self.data.iloc[c:d].loc[:, b:a]).mean().mean()
         self.data -= offset
 
+    def quadratic(self, x, a, pow, c):
+        return a * x**pow + c
+
     def apply_gain_correction(self):
         gain = self.parameters.Streakcamera.MCPGain
-        gcoef = float(self.config["Gain-Correction"][gain])
+        if int(gain) % 10 == 0:
+            gcoef = float(self.config["Gain-Correction"][gain])
+        else:
+            a = float(self.config["Fitted-Gain-Correction"]["a"])
+            pow = float(self.config["Fitted-Gain-Correction"]["pow"])
+            c = float(self.config["Fitted-Gain-Correction"]["c"])
+            gcoef = self.quadratic(float(gain), a, pow, c)
         self.data /= gcoef
 
     def apply_cornerbg(self, ci1=10, ci2=-10, t_max=10):
@@ -303,7 +312,7 @@ class StreakImage:
         self.data -= offset
 
     def apply_exp_correction(self):
-        suffix_dic = {"ms": 1, "u": 0.001}
+        suffix_dic = {"ms": 1, "us": 0.001}
         time_and_unit = self.parameters.Acquisition.ExposureTime.split(" ")
         exp_time = int(time_and_unit[0]) * suffix_dic[time_and_unit[1]]
         nr_exp = int(self.parameters.Acquisition.NrExposure)
@@ -321,12 +330,14 @@ class StreakImage:
                     return self.config[f"Cam-Correction-Prefix-{camera_name}"][key]
         return self.config[f"Cam-Correction-Prefix-{camera_name}"]["default"]
 
-    def apply_camera_correction(self):
+    def apply_camera_correction(self, prefix=None, verbose=False):
         timerange: str = self.parameters.Streakcamera.TimeRange
-        prefix = f"_{self.get_cam_corr_prefix()}"
+        prefix = f"_{self.get_cam_corr_prefix()}" if not prefix else f"_{prefix}"
         camera_name = self.parameters.Camera.CameraName
         cam_corrections_folder = self.config["Cam-Corrections-Folders"][camera_name]
         cam_corrections_filename = f"{camera_name}{prefix}_ST{timerange}_correction_{str(self.width)}x{str(self.height)}.npy"
+        if verbose:
+            print(cam_corrections_filename)
 
         correction = np.load(
             f"{os.path.dirname(__file__)}/{cam_corrections_folder}/{cam_corrections_filename}"
@@ -343,8 +354,7 @@ class StreakImage:
             delimiter="\t",
             index_col=0,
             names=[""],
-            squeeze=True,
-        )
+        ).squeeze("columns")
         wls = self.data.columns.values
         if (
             wls[0] < disp.index.values[0] or wls[-1] > disp.index.values[-1]
@@ -417,7 +427,7 @@ class StreakImage:
 
         return f"Spectograph\r{spec_keys}\r{spect_values}\rStreakcamera\r{cam_keys}\r{cam_values}\rAcquisition\r{acq_keys}\r{acq_values}"
 
-    def export_wexf(self, path: str):
+    def export_wexf(self, path: Path):
         """Export img to the wavelength explicit format readable by Glotaran
 
         See https://github.com/nicohofdtz/glotaran.github.io/blob/patch-1/legacy/file_formats.md for more information
