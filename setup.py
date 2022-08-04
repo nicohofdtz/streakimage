@@ -10,7 +10,7 @@ streak_data.append("streakimage.ini")
 
 setup(
     name="streakimage",
-    version="2.3.6",
+    version="2.3.7",
     description="Python Class for streak camera files.",
     author="Nico Hofeditz",
     author_email="nicohfdtz@gmail.com",
