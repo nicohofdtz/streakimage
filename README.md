@@ -1,3 +1,5 @@
+# NOTE: Development moved to internal GitLab. The version here should be considered deprecated as of October 2022. For more information contact [@nicohofdtz](http://www.github.com/nicohofdtz) or anyone from the [semiconductor spectroscopy group](https://www.uni-marburg.de/en/fb13/semiconductor-spectroscopy/ag-gerhard/team).
+
 # StreakImage
 
 Simply feed the StreakImage class the path to an .img-file to get a python object.
